@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Finbert</string>
+    <string name="next">Next</string>
+    <string name="prev">Previous</string>
+    <string name="share">Share</string>
+</resources>
