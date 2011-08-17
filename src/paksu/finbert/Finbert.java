@@ -21,11 +21,6 @@ public class Finbert extends Activity {
 	private class BackgroundDownloader extends AsyncTask<DilbertReader, Void, Bitmap> {
 	    private ImageView imageView;
 	    
-	    public BackgroundDownloader(ImageView imageViewHandle) {
-	        super();
-	        imageView = imageViewHandle;
-	    }
-	    
 		@Override
 		protected Bitmap doInBackground(DilbertReader... params) {
 			Bitmap downloadedImage = params[0].readCurrent();
@@ -36,7 +31,7 @@ public class Finbert extends Activity {
 	    	nextButton.setEnabled(dilbertReader.isNextAvailable());
 	    	prevButton.setEnabled(dilbertReader.isPreviousAvailable());
 	    	Log.d("finbert","BackgroundDownloader onPostExecute");
-	    	this.imageView.setImageBitmap(downloadedImage);
+	    	imageView.setImageBitmap(downloadedImage);
 	    }
 	}
 
@@ -52,7 +47,7 @@ public class Finbert extends Activity {
     	prevButton.setEnabled(false);
     	
         dilbertReader = DilbertReader.getInstance();
-        new BackgroundDownloader(imageViewHandle).execute(dilbertReader);
+        new BackgroundDownloader().execute(dilbertReader);
 
     }
     
@@ -64,7 +59,7 @@ public class Finbert extends Activity {
     	}
     	nextButton.setEnabled(false);
     	prevButton.setEnabled(false);
-    	new BackgroundDownloader(imageViewHandle).execute(dilbertReader);
+    	new BackgroundDownloader().execute(dilbertReader);
     }
     
 	public ImageView getImageViewHandle() {
