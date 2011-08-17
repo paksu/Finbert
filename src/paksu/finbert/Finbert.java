@@ -3,6 +3,7 @@ package paksu.finbert;
 import com.helloandroid.R;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -18,8 +19,8 @@ public class Finbert extends Activity {
 	private Button nextButton;
 	private Button prevButton;
 	private DilbertReader dilbertReader;
+
 	private class BackgroundDownloader extends AsyncTask<DilbertReader, Void, Bitmap> {
-	    private ImageView imageView;
 	    
 		@Override
 		protected Bitmap doInBackground(DilbertReader... params) {
@@ -31,7 +32,8 @@ public class Finbert extends Activity {
 	    	nextButton.setEnabled(dilbertReader.isNextAvailable());
 	    	prevButton.setEnabled(dilbertReader.isPreviousAvailable());
 	    	Log.d("finbert","BackgroundDownloader onPostExecute");
-	    	imageView.setImageBitmap(downloadedImage);
+	    	imageViewHandle.setImageBitmap(downloadedImage);
+	    	setTitle("Finbert - " + dilbertReader.getCurrentDate());
 	    }
 	}
 
@@ -39,6 +41,7 @@ public class Finbert extends Activity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
+
         this.setImageViewHandle((ImageView) findViewById(R.id.imageview));
         this.nextButton = (Button) findViewById(R.id.next);
         this.prevButton = (Button) findViewById(R.id.previous);

@@ -106,7 +106,7 @@ public class DilbertReader {
 		}
 	}
 
-	private String getCurrentDate() {
+	public String getCurrentDate() {
 		while (dt.getDayOfWeek() > 5 ) dt = dt.minusDays(1);
 		Log.d("finbert", "Current date:" + Integer.toString(dt.getYear()) + "-" + Integer.toString(dt.getMonthOfYear()) + "-" + Integer.toString(dt.getDayOfMonth()));
 		return Integer.toString(dt.getYear()) + "-" + Integer.toString(dt.getMonthOfYear()) + "-" + Integer.toString(dt.getDayOfMonth());
@@ -158,7 +158,7 @@ public class DilbertReader {
 	}
 
 	public boolean isNextAvailable() {
-		return this.nextAvailable;
+		return nextAvailable;
 	}
 
 	public void setNextAvailable(boolean isNextAvailable) {
