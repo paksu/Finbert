@@ -3,7 +3,10 @@ package paksu.finbert;
 import com.helloandroid.R;
 
 import android.app.Activity;
+import android.graphics.Bitmap;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -15,7 +18,28 @@ public class Finbert extends Activity {
 	private Button nextButton;
 	private Button prevButton;
 	private DilbertReader dilbertReader;
-	
+	private class BackgroundDownloader extends AsyncTask<DilbertReader, Void, Bitmap> {
+	    private ImageView imageView;
+	    
+	    public BackgroundDownloader(ImageView imageViewHandle) {
+	        super();
+	        imageView = imageViewHandle;
+	    }
+	    
+		@Override
+		protected Bitmap doInBackground(DilbertReader... params) {
+			Bitmap downloadedImage = params[0].readCurrent();
+	    	return downloadedImage;
+	    }
+
+	    protected void onPostExecute(Bitmap downloadedImage) {
+	    	nextButton.setEnabled(dilbertReader.isNextAvailable());
+	    	prevButton.setEnabled(dilbertReader.isPreviousAvailable());
+	    	Log.d("finbert","BackgroundDownloader onPostExecute");
+	    	this.imageView.setImageBitmap(downloadedImage);
+	    }
+	}
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -24,11 +48,11 @@ public class Finbert extends Activity {
         this.nextButton = (Button) findViewById(R.id.next);
         this.prevButton = (Button) findViewById(R.id.previous);
         
+    	nextButton.setEnabled(false);
+    	prevButton.setEnabled(false);
+    	
         dilbertReader = DilbertReader.getInstance();
         new BackgroundDownloader(imageViewHandle).execute(dilbertReader);
-
-    	//nextButton.setEnabled(DilbertReader.isNextAvailable());
-    	//prevButton.setEnabled(DilbertReader.isPreviousAvailable());
 
     }
     
@@ -38,12 +62,9 @@ public class Finbert extends Activity {
     	} else if(v == findViewById(R.id.previous)) {
     		dilbertReader.previousDay();
     	}
-    	
+    	nextButton.setEnabled(false);
+    	prevButton.setEnabled(false);
     	new BackgroundDownloader(imageViewHandle).execute(dilbertReader);
-    	
-    	//nextButton.setEnabled(DilbertReader.isNextAvailable());
-    	//prevButton.setEnabled(DilbertReader.isPreviousAvailable());
-    	
     }
     
 	public ImageView getImageViewHandle() {

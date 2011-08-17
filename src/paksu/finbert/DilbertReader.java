@@ -17,8 +17,8 @@ import android.util.Log;
 public class DilbertReader {
 	private String defaultDilbertURL = "http://www.taloussanomat.fi/dilbert/dilbert.php?date=";
     private DateTime dt = new DateTime();
-    private static boolean nextAvailable = false;
-    private static boolean previousAvailable = false;
+    private boolean nextAvailable = false;
+    private boolean previousAvailable = false;
     private static DilbertReader instance = null;
     private HashMap<String,SoftReference<Bitmap>> imageCache;
     private HashMap<String,Boolean> availabilityCache;
@@ -157,16 +157,16 @@ public class DilbertReader {
 		return true;
 	}
 
-	public static boolean isNextAvailable() {
-		return nextAvailable;
+	public boolean isNextAvailable() {
+		return this.nextAvailable;
 	}
 
 	public void setNextAvailable(boolean isNextAvailable) {
 		nextAvailable = isNextAvailable;
 	}
 
-	public static boolean isPreviousAvailable() {
-		return previousAvailable;
+	public boolean isPreviousAvailable() {
+		return this.previousAvailable;
 	}
 
 	public void setPreviousAvailable(boolean isPreviousAvailable) {
