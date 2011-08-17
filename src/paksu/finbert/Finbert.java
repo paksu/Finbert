@@ -5,32 +5,34 @@ import com.helloandroid.R;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup.LayoutParams;
+import android.view.animation.AnimationUtils;
 import android.widget.Button;
+import android.widget.FrameLayout;
+import android.widget.ImageSwitcher;
 import android.widget.ImageView;
+import android.widget.ImageView.ScaleType;
+import android.widget.ViewSwitcher.ViewFactory;
 
 
-public class Finbert extends Activity {
-
-	private ImageView imageViewHandle;
+public final class Finbert extends Activity implements ViewFactory {
+	private enum Direction { LEFT, RIGHT };
+	private ImageSwitcher imageSwitcher;
 	private Button nextButton;
 	private Button prevButton;
-	private DilbertReader dilbertReader;
+	private final DilbertReader dilbertReader;
     
 	private class BackgroundDownloader extends AsyncTask<DilbertReader, Void, Bitmap> {
 		private ProgressDialog dialog;
 		
-		public BackgroundDownloader(Activity activity) {
-			dialog = new ProgressDialog(activity);
+		protected void onPreExecute() {
+			dialog = ProgressDialog.show(Finbert.this, null, "Loading image..");
 		}
 		
-		protected void onPreExecute() {
-			this.dialog.setMessage("Loading image..");
-			this.dialog.show();
-		}
 		@Override
 		protected Bitmap doInBackground(DilbertReader... params) {
 			Bitmap downloadedImage = params[0].readCurrent();
@@ -38,44 +40,79 @@ public class Finbert extends Activity {
 	    }
 
 	    protected void onPostExecute(Bitmap downloadedImage) {
-	    	nextButton.setEnabled(dilbertReader.isNextAvailable());
-	    	prevButton.setEnabled(dilbertReader.isPreviousAvailable());
-	    	Log.d("finbert","BackgroundDownloader onPostExecute");
-	    	imageViewHandle.setImageBitmap(downloadedImage);
-	    	setTitle("Finbert - " + dilbertReader.getCurrentDate());
+	    	updateNavigationButtonStates();
+			updateTitle();
+	    	setFinbertImage(downloadedImage);
 	    	if(dialog.isShowing()) {
 	    		dialog.dismiss();
 	    	}
 	    }
+	}
+	
+	public Finbert() {
+		dilbertReader = DilbertReader.getInstance();
 	}
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
-
-        this.setImageViewHandle((ImageView) findViewById(R.id.imageview));
-        this.nextButton = (Button) findViewById(R.id.next);
-        this.prevButton = (Button) findViewById(R.id.previous);
         
-        dilbertReader = DilbertReader.getInstance();
-        new BackgroundDownloader(this).execute(dilbertReader);
-
+        imageSwitcher = (ImageSwitcher) findViewById(R.id.dilbert_image_switcher);
+        /* use fade-in for first image */
+        imageSwitcher.setInAnimation(this, R.anim.fade_in_animation);
+        imageSwitcher.setFactory(this);
+        
+        nextButton = (Button) findViewById(R.id.next);
+        prevButton = (Button) findViewById(R.id.previous);
+        
+        fetchNewFinbert();
     }
-    
+ 
     public void buttonListener(View v) {
     	if(v == findViewById(R.id.next)) {
     		dilbertReader.nextDay();
+    		setNextTransitionDirection(Direction.RIGHT);
     	} else if(v == findViewById(R.id.previous)) {
     		dilbertReader.previousDay();
+    		setNextTransitionDirection(Direction.LEFT);
     	}
-    	new BackgroundDownloader(this).execute(dilbertReader);
+    	
+    	fetchNewFinbert();
     }
     
-	public ImageView getImageViewHandle() {
-		return imageViewHandle;
+    private void setNextTransitionDirection(Direction direction) {
+    	boolean fromLeft = direction == Direction.LEFT? true : false;
+        imageSwitcher.setInAnimation(AnimationUtils.makeInAnimation(this, fromLeft));
+        imageSwitcher.setOutAnimation(AnimationUtils.makeOutAnimation(this, fromLeft));
+    }
+    
+	private void fetchNewFinbert() {
+		new BackgroundDownloader().execute(dilbertReader);
 	}
-	public void setImageViewHandle(ImageView imageViewHandle) {
-		this.imageViewHandle = imageViewHandle;
+
+	private void updateNavigationButtonStates() {
+		nextButton.setEnabled(dilbertReader.isNextAvailable());
+    	prevButton.setEnabled(dilbertReader.isPreviousAvailable());
+	}
+	
+	private void updateTitle() {
+		setTitle("Finbert - " + dilbertReader.getCurrentDate());
+	}
+
+	private void setFinbertImage(Bitmap downloadedImage) {
+		BitmapDrawable bitmapDrawable = new BitmapDrawable(getResources(), downloadedImage);
+		imageSwitcher.setImageDrawable(bitmapDrawable);
+	}
+	
+	/**
+	 * Generates views for {@link ImageSwitcher}
+	 */
+	@Override
+	public View makeView() {
+		ImageView view = new ImageView(this);
+		view.setScaleType(ScaleType.FIT_CENTER);
+		view.setLayoutParams(new FrameLayout.LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT));
+		return view;
 	}
 }
