@@ -43,6 +43,7 @@ public final class Finbert extends Activity implements ViewFactory {
 	    	updateNavigationButtonStates();
 			updateTitle();
 	    	setFinbertImage(downloadedImage);
+	    	
 	    	if(dialog.isShowing()) {
 	    		dialog.dismiss();
 	    	}
