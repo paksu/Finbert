@@ -42,7 +42,7 @@ public class Finbert extends Activity {
 	    	prevButton.setEnabled(dilbertReader.isPreviousAvailable());
 	    	Log.d("finbert","BackgroundDownloader onPostExecute");
 	    	imageViewHandle.setImageBitmap(downloadedImage);
-	    	setTitle("Finbert - " + dilbertReader.getCurrentDate());
+	    	setTitle(getString(R.string.app_name) + " - " + dilbertReader.getCurrentDate());
 	    	if(dialog.isShowing()) {
 	    		dialog.dismiss();
 	    	}
