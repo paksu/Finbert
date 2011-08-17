@@ -19,9 +19,18 @@ public class Finbert extends Activity {
 	private Button nextButton;
 	private Button prevButton;
 	private DilbertReader dilbertReader;
-
+    
 	private class BackgroundDownloader extends AsyncTask<DilbertReader, Void, Bitmap> {
-	    
+		private ProgressDialog dialog;
+		
+		public BackgroundDownloader(Activity activity) {
+			dialog = new ProgressDialog(activity);
+		}
+		
+		protected void onPreExecute() {
+			this.dialog.setMessage("Loading image..");
+			this.dialog.show();
+		}
 		@Override
 		protected Bitmap doInBackground(DilbertReader... params) {
 			Bitmap downloadedImage = params[0].readCurrent();
@@ -34,6 +43,9 @@ public class Finbert extends Activity {
 	    	Log.d("finbert","BackgroundDownloader onPostExecute");
 	    	imageViewHandle.setImageBitmap(downloadedImage);
 	    	setTitle("Finbert - " + dilbertReader.getCurrentDate());
+	    	if(dialog.isShowing()) {
+	    		dialog.dismiss();
+	    	}
 	    }
 	}
 
@@ -46,11 +58,8 @@ public class Finbert extends Activity {
         this.nextButton = (Button) findViewById(R.id.next);
         this.prevButton = (Button) findViewById(R.id.previous);
         
-    	nextButton.setEnabled(false);
-    	prevButton.setEnabled(false);
-    	
         dilbertReader = DilbertReader.getInstance();
-        new BackgroundDownloader().execute(dilbertReader);
+        new BackgroundDownloader(this).execute(dilbertReader);
 
     }
     
@@ -60,9 +69,7 @@ public class Finbert extends Activity {
     	} else if(v == findViewById(R.id.previous)) {
     		dilbertReader.previousDay();
     	}
-    	nextButton.setEnabled(false);
-    	prevButton.setEnabled(false);
-    	new BackgroundDownloader().execute(dilbertReader);
+    	new BackgroundDownloader(this).execute(dilbertReader);
     }
     
 	public ImageView getImageViewHandle() {
