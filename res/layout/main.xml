@@ -8,11 +8,11 @@
 	<RelativeLayout
 		android:layout_width="fill_parent"
 		android:layout_height="50dp"
-		android:background="#ff00ff">
-		<Button
+		android:padding="3dp">
+		<ImageView
 			android:layout_height="wrap_content"
 			android:layout_width="wrap_content"
-			android:text="Finbert logo"></Button>
+			android:src="@drawable/finbert_logo"></ImageView>
 		<Button
 			android:id="@+id/twitter_button"
 			android:layout_height="wrap_content"
@@ -25,12 +25,11 @@
 			android:layout_width="wrap_content"
 			android:text="FB"
 			android:layout_toLeftOf="@id/twitter_button"></Button>
-		<Button
-			android:id="@+id/share_text"
+		<TextView
 			android:layout_height="wrap_content"
 			android:layout_width="wrap_content"
-			android:text="share teksti"
-			android:layout_toLeftOf="@id/facebook_button"></Button>
+			android:text="share: "
+			android:layout_toLeftOf="@id/facebook_button"/>
 	</RelativeLayout>
 	<LinearLayout
 		android:layout_width="fill_parent"
@@ -47,9 +46,9 @@
 		android:orientation="horizontal"
 		android:layout_width="fill_parent"
 		android:gravity="bottom"
-		android:background="#ff00ff"
-		android:layout_height="50dp">
-		<Button
+		android:layout_height="50dp"
+		android:padding="3dp">
+		<ImageButton
 			android:id="@+id/previous"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
@@ -57,23 +56,28 @@
 			android:layout_weight="2"
 			android:text="@string/prev"
 			android:layout_alignParentLeft="true"
-			android:onClick="buttonListener" />
-		<Button
+			android:scaleType="fitCenter"
+			android:src="@drawable/arrow_left"
+			android:onClick="buttonListener"
+			/>
+		<ImageButton
 			android:id="@+id/next"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
+			android:layout_marginLeft="10dip"
 			android:layout_weight="2"
-			android:text="@string/next"
+			android:text="@string/prev"
 			android:layout_toRightOf="@id/previous"
-			android:onClick="buttonListener" />
-		<Button
+			android:scaleType="fitCenter"
+			android:src="@drawable/arrow_right"
+			android:onClick="buttonListener"
+			/>
+		<ImageView
 			android:id="@+id/dilbert_face"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
-			android:layout_weight="2"
-			android:text="naama"
 			android:layout_alignParentRight="true"
-			android:onClick="buttonListener" />
+			android:src="@drawable/finbert_face" />
 		<Button
 			android:id="@+id/comments_bubble"
 			android:layout_width="wrap_content"
