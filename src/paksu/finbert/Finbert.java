@@ -77,9 +77,14 @@ public final class Finbert extends Activity implements ViewFactory {
     	} else if(v == findViewById(R.id.previous)) {
     		dilbertReader.previousDay();
     		setNextTransitionDirection(Direction.LEFT);
-    	}
+    	} 
     	
-    	fetchNewFinbert();
+    	if(v == findViewById(R.id.share)) {
+    		// TODO 
+    	} else {
+        	fetchNewFinbert();
+    	}
+
     }
     
     private void setNextTransitionDirection(Direction direction) {
@@ -109,6 +114,7 @@ public final class Finbert extends Activity implements ViewFactory {
 	/**
 	 * Generates views for {@link ImageSwitcher}
 	 */
+	
 	@Override
 	public View makeView() {
 		ImageView view = new ImageView(this);

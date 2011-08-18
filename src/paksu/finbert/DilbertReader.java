@@ -2,7 +2,6 @@ package paksu.finbert;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.ref.SoftReference;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -20,12 +19,12 @@ public class DilbertReader {
     private boolean nextAvailable = false;
     private boolean previousAvailable = false;
     private static DilbertReader instance = null;
-    private HashMap<String,SoftReference<Bitmap>> imageCache;
     private HashMap<String,Boolean> availabilityCache;
+	private ImageCache imageCache;
     
     protected DilbertReader() {
-    	imageCache = new HashMap<String,SoftReference<Bitmap>>();
     	availabilityCache = new HashMap<String,Boolean>();
+    	imageCache = new ImageCache();
     }
     
     public static DilbertReader getInstance() {
@@ -37,14 +36,12 @@ public class DilbertReader {
     }
     
 	public Bitmap readCurrent() {
-		Bitmap picture;
+		Bitmap picture = null;
 		URL dilbertUrl;
 		String date = getCurrentDate();
-		
-		if(imageCache.containsKey(date)) {
-			Log.d("finbert","Loading cached image for date:" + date);
-			SoftReference<Bitmap> cachedImage = imageCache.get(date);
-			picture = cachedImage.get();
+
+		if(imageCache.imageIsCachedFor(date)) {
+			picture = imageCache.get(date);
 		} else {
 			Log.d("finbert","Downloading image for date:" + date);
 			
@@ -61,7 +58,7 @@ public class DilbertReader {
 	            conn.connect();
 	            InputStream is = conn.getInputStream();
 	            picture = BitmapFactory.decodeStream(is);
-	            imageCache.put(date, new SoftReference<Bitmap>(picture));
+	            imageCache.set(date, picture);
 	            availabilityCache.put(date, true);
 	            Log.d("finbert","Downloaded and cached image for date:" + date);
 	            
@@ -69,7 +66,7 @@ public class DilbertReader {
 	            e.printStackTrace();
 	            throw new RuntimeException(e);
 			}
-		}
+		} 
 		
 		checkAvailability();
         
@@ -156,7 +153,7 @@ public class DilbertReader {
 		}
 		return true;
 	}
-
+	
 	public boolean isNextAvailable() {
 		return nextAvailable;
 	}
