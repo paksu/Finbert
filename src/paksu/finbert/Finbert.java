@@ -11,7 +11,6 @@ import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
 import android.view.animation.AnimationUtils;
-import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageSwitcher;
 import android.widget.ImageView;
@@ -22,8 +21,8 @@ import android.widget.ViewSwitcher.ViewFactory;
 public final class Finbert extends Activity implements ViewFactory {
 	private enum Direction { LEFT, RIGHT };
 	private ImageSwitcher imageSwitcher;
-	private Button nextButton;
-	private Button prevButton;
+	private ImageView nextButton;
+	private ImageView prevButton;
 	private final DilbertReader dilbertReader;
     
 	private class BackgroundDownloader extends AsyncTask<DilbertReader, Void, Bitmap> {
@@ -64,8 +63,8 @@ public final class Finbert extends Activity implements ViewFactory {
         imageSwitcher.setInAnimation(this, R.anim.fade_in_animation);
         imageSwitcher.setFactory(this);
         
-        nextButton = (Button) findViewById(R.id.next);
-        prevButton = (Button) findViewById(R.id.previous);
+        nextButton = (ImageView) findViewById(R.id.next);
+        prevButton = (ImageView) findViewById(R.id.previous);
         
         fetchNewFinbert();
     }
@@ -78,13 +77,7 @@ public final class Finbert extends Activity implements ViewFactory {
     		dilbertReader.previousDay();
     		setNextTransitionDirection(Direction.LEFT);
     	} 
-    	
-    	if(v == findViewById(R.id.share)) {
-    		// TODO 
-    	} else {
-        	fetchNewFinbert();
-    	}
-
+    	fetchNewFinbert();
     }
     
     private void setNextTransitionDirection(Direction direction) {
