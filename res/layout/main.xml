@@ -7,29 +7,33 @@
 	android:background="#ffffff">
 	<RelativeLayout
 		android:layout_width="fill_parent"
-		android:layout_height="50dp"
+		android:layout_height="46dp"
 		android:padding="3dp">
 		<ImageView
-			android:layout_height="wrap_content"
+			android:layout_height="40dp"
 			android:layout_width="wrap_content"
+			android:scaleType="fitCenter"
 			android:src="@drawable/finbert_logo"></ImageView>
-		<Button
+		<ImageButton
 			android:id="@+id/twitter_button"
 			android:layout_height="wrap_content"
 			android:layout_width="wrap_content"
-			android:text="TW"
-			android:layout_alignParentRight="true"></Button>
-		<Button
+			android:layout_marginLeft="3dp"
+			android:background="@drawable/twitter_button"
+			android:scaleType="fitCenter"
+			android:layout_alignParentRight="true" />
+		<ImageButton
 			android:id="@+id/facebook_button"
 			android:layout_height="wrap_content"
 			android:layout_width="wrap_content"
-			android:text="FB"
-			android:layout_toLeftOf="@id/twitter_button"></Button>
+			android:background="@drawable/facebook_button"
+			android:scaleType="fitCenter"
+			android:layout_toLeftOf="@id/twitter_button" />
 		<TextView
 			android:layout_height="wrap_content"
 			android:layout_width="wrap_content"
 			android:text="share: "
-			android:layout_toLeftOf="@id/facebook_button"/>
+			android:layout_toLeftOf="@id/facebook_button" />
 	</RelativeLayout>
 	<LinearLayout
 		android:layout_width="fill_parent"
@@ -48,7 +52,7 @@
 		android:gravity="bottom"
 		android:layout_height="50dp"
 		android:padding="3dp">
-		<ImageButton
+		<ImageView
 			android:id="@+id/previous"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
@@ -58,9 +62,8 @@
 			android:layout_alignParentLeft="true"
 			android:scaleType="fitCenter"
 			android:src="@drawable/arrow_left"
-			android:onClick="buttonListener"
-			/>
-		<ImageButton
+			android:onClick="buttonListener" />
+		<ImageView
 			android:id="@+id/next"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
@@ -70,8 +73,7 @@
 			android:layout_toRightOf="@id/previous"
 			android:scaleType="fitCenter"
 			android:src="@drawable/arrow_right"
-			android:onClick="buttonListener"
-			/>
+			android:onClick="buttonListener" />
 		<ImageView
 			android:id="@+id/dilbert_face"
 			android:layout_width="wrap_content"
