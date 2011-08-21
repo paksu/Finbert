@@ -17,8 +17,6 @@ import android.widget.ImageView.ScaleType;
 import android.widget.TextView;
 import android.widget.ViewSwitcher.ViewFactory;
 
-import com.helloandroid.R;
-
 public final class StripBrowserActivity extends Activity implements ViewFactory {
 	private enum Direction {
 		LEFT, RIGHT

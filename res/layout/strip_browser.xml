@@ -11,7 +11,8 @@
 		android:paddingTop="3dp"
 		android:paddingBottom="3dp"
 		android:paddingLeft="5dp"
-		android:paddingRight="15dp">
+		android:paddingRight="15dp"
+		android:background="@drawable/top_bar_background">
 		<ImageView
 			android:layout_height="fill_parent"
 			android:layout_width="wrap_content"
@@ -19,7 +20,7 @@
 			android:src="@drawable/finbert_logo"></ImageView>
 		<ImageButton
 			android:id="@+id/twitter_button"
-			android:layout_height="fill_parent"
+			android:layout_height="wrap_content"
 			android:layout_width="wrap_content"
 			android:layout_marginLeft="10dp"
 			android:background="@drawable/twitter_button"
@@ -27,7 +28,7 @@
 			android:layout_alignParentRight="true" />
 		<ImageButton
 			android:id="@+id/facebook_button"
-			android:layout_height="fill_parent"
+			android:layout_height="wrap_content"
 			android:layout_width="wrap_content"
 			android:layout_marginLeft="5dp"
 			android:background="@drawable/facebook_button"
@@ -47,7 +48,8 @@
 		android:layout_width="fill_parent"
 		android:layout_height="wrap_content"
 		android:orientation="vertical"
-		android:layout_weight="5">
+		android:layout_weight="5"
+		android:background="#000000">
 		<ImageSwitcher
 			android:id="@+id/dilbert_image_switcher"
 			android:layout_width="fill_parent"
@@ -59,7 +61,8 @@
 		android:layout_width="fill_parent"
 		android:gravity="bottom"
 		android:layout_height="50dp"
-		android:padding="3dp">
+		android:padding="3dp"
+		android:background="@drawable/top_bar_background">
 		<ImageView
 			android:id="@+id/previous"
 			android:layout_width="wrap_content"
