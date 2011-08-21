@@ -50,11 +50,10 @@
 		android:orientation="vertical"
 		android:layout_weight="5"
 		android:background="#000000">
-		<ImageSwitcher
+		<paksu.finbert.DilbertImageSwitcher
 			android:id="@+id/dilbert_image_switcher"
 			android:layout_width="fill_parent"
-			android:layout_height="fill_parent">
-		</ImageSwitcher>
+			android:layout_height="fill_parent" />
 	</LinearLayout>
 	<RelativeLayout
 		android:orientation="horizontal"

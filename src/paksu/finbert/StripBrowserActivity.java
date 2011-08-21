@@ -1,15 +1,16 @@
 package paksu.finbert;
 
+import paksu.finbert.DilbertImageSwitcher.Direction;
+import paksu.finbert.DilbertImageSwitcher.OnFlingListener;
 import android.app.Activity;
-import android.app.ProgressDialog;
 import android.graphics.Bitmap;
 import android.graphics.Typeface;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
-import android.view.animation.AnimationUtils;
 import android.widget.FrameLayout;
 import android.widget.ImageSwitcher;
 import android.widget.ImageView;
@@ -18,40 +19,47 @@ import android.widget.TextView;
 import android.widget.ViewSwitcher.ViewFactory;
 
 public final class StripBrowserActivity extends Activity implements ViewFactory {
-	private enum Direction {
-		LEFT, RIGHT
-	};
-
-	private ImageSwitcher imageSwitcher;
+	private DilbertImageSwitcher imageSwitcher;
 	private ImageView nextButton;
 	private ImageView prevButton;
 	private final DilbertReader dilbertReader;
+	private Direction nextSlideDirection;
+	private boolean isFetchingImage = false;
 
-	private class BackgroundDownloader extends AsyncTask<DilbertReader, Void, Bitmap> {
-		private ProgressDialog dialog;
-
+	private class BackgroundDownloader extends AsyncTask<Void, Void, Bitmap> {
 		@Override
 		protected void onPreExecute() {
-			dialog = ProgressDialog.show(StripBrowserActivity.this, null, "Loading image..");
+			isFetchingImage = true;
 		}
 
 		@Override
-		protected Bitmap doInBackground(DilbertReader... params) {
-			Bitmap downloadedImage = params[0].readCurrent();
-			return downloadedImage;
+		protected Bitmap doInBackground(Void... params) {
+			return dilbertReader.readCurrent();
 		}
 
 		@Override
 		protected void onPostExecute(Bitmap downloadedImage) {
-			updateNavigationButtonStates();
-			updateTitle();
-			setFinbertImage(downloadedImage);
-
-			if (dialog.isShowing()) {
-				dialog.dismiss();
-			}
+			isFetchingImage = false;
+			imageSwitcher.fadeToDrawable(new BitmapDrawable(downloadedImage));
 		}
 	}
+
+	private final OnFlingListener imageSwitcherOnFlingListener = new OnFlingListener() {
+		@Override
+		public void onFling(Direction direction) {
+			if (!isFetchingImage) {
+				if (direction == Direction.RIGHT) {
+					if (dilbertReader.isNextAvailable()) {
+						changeToNextDay();
+					}
+				} else if (direction == Direction.LEFT) {
+					if (dilbertReader.isPreviousAvailable()) {
+						changeToPreviousDay();
+					}
+				}
+			}
+		}
+	};
 
 	public StripBrowserActivity() {
 		dilbertReader = DilbertReader.getInstance();
@@ -62,10 +70,9 @@ public final class StripBrowserActivity extends Activity implements ViewFactory 
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.strip_browser);
 
-		imageSwitcher = (ImageSwitcher) findViewById(R.id.dilbert_image_switcher);
-		/* use fade-in for first image */
-		imageSwitcher.setInAnimation(this, R.anim.fade_in_animation);
+		imageSwitcher = (DilbertImageSwitcher) findViewById(R.id.dilbert_image_switcher);
 		imageSwitcher.setFactory(this);
+		imageSwitcher.setOnFlingListener(imageSwitcherOnFlingListener);
 
 		nextButton = (ImageView) findViewById(R.id.next);
 		prevButton = (ImageView) findViewById(R.id.previous);
@@ -80,24 +87,55 @@ public final class StripBrowserActivity extends Activity implements ViewFactory 
 	}
 
 	public void buttonListener(View v) {
-		if (v == findViewById(R.id.next)) {
-			dilbertReader.nextDay();
-			setNextTransitionDirection(Direction.RIGHT);
-		} else if (v == findViewById(R.id.previous)) {
-			dilbertReader.previousDay();
-			setNextTransitionDirection(Direction.LEFT);
+		if (isFetchingImage) {
+			return;
 		}
+
+		if (v == findViewById(R.id.next)) {
+			if (dilbertReader.isNextAvailable()) {
+				changeToNextDay();
+			}
+		} else if (v == findViewById(R.id.previous)) {
+			if (dilbertReader.isPreviousAvailable()) {
+				changeToPreviousDay();
+			}
+		}
+	}
+
+	private void changeToNextDay() {
+		dilbertReader.nextDay();
+		nextSlideDirection = Direction.RIGHT;
+		updateGUI();
 		fetchNewFinbert();
 	}
 
-	private void setNextTransitionDirection(Direction direction) {
-		boolean fromLeft = direction == Direction.LEFT ? true : false;
-		imageSwitcher.setInAnimation(AnimationUtils.makeInAnimation(this, fromLeft));
-		imageSwitcher.setOutAnimation(AnimationUtils.makeOutAnimation(this, fromLeft));
+	private void changeToPreviousDay() {
+		dilbertReader.previousDay();
+		nextSlideDirection = Direction.LEFT;
+		updateGUI();
+		fetchNewFinbert();
+	}
+
+	private void updateGUI() {
+		updateNavigationButtonStates();
+		updateTitle();
 	}
 
 	private void fetchNewFinbert() {
-		new BackgroundDownloader().execute(dilbertReader);
+		if (dilbertReader.hasCurrentCached()) {
+			imageSwitcher.slideToDrawable(currentDilbertDrawable(), nextSlideDirection);
+		} else {
+			imageSwitcher.slideToDrawable(temporaryDrawable(), nextSlideDirection);
+			new BackgroundDownloader().execute();
+		}
+	}
+
+	private Drawable currentDilbertDrawable() {
+		return new BitmapDrawable(dilbertReader.readCurrent());
+	}
+
+	private Drawable temporaryDrawable() {
+		return getResources().getDrawable(R.drawable.loading);
 	}
 
 	private void updateNavigationButtonStates() {
@@ -107,11 +145,6 @@ public final class StripBrowserActivity extends Activity implements ViewFactory 
 
 	private void updateTitle() {
 		setTitle("Finbert - " + dilbertReader.getCurrentDate());
-	}
-
-	private void setFinbertImage(Bitmap downloadedImage) {
-		BitmapDrawable bitmapDrawable = new BitmapDrawable(getResources(), downloadedImage);
-		imageSwitcher.setImageDrawable(bitmapDrawable);
 	}
 
 	/**

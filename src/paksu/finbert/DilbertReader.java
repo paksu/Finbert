@@ -35,6 +35,10 @@ public final class DilbertReader {
 		return instance;
 	}
 
+	public boolean hasCurrentCached() {
+		return imageCache.get(getCurrentDate()) != null;
+	}
+
 	public Bitmap readCurrent() {
 		Bitmap picture = null;
 		URL dilbertUrl;
