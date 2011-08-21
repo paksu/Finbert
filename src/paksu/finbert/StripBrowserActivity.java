@@ -1,7 +1,5 @@
 package paksu.finbert;
 
-import com.helloandroid.R;
-
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.graphics.Bitmap;
@@ -17,84 +15,90 @@ import android.widget.ImageView;
 import android.widget.ImageView.ScaleType;
 import android.widget.ViewSwitcher.ViewFactory;
 
+import com.helloandroid.R;
 
-public final class Finbert extends Activity implements ViewFactory {
-	private enum Direction { LEFT, RIGHT };
+public final class StripBrowserActivity extends Activity implements ViewFactory {
+	private enum Direction {
+		LEFT, RIGHT
+	};
+
 	private ImageSwitcher imageSwitcher;
 	private ImageView nextButton;
 	private ImageView prevButton;
 	private final DilbertReader dilbertReader;
-    
+
 	private class BackgroundDownloader extends AsyncTask<DilbertReader, Void, Bitmap> {
 		private ProgressDialog dialog;
-		
+
+		@Override
 		protected void onPreExecute() {
-			dialog = ProgressDialog.show(Finbert.this, null, "Loading image..");
+			dialog = ProgressDialog.show(StripBrowserActivity.this, null, "Loading image..");
 		}
-		
+
 		@Override
 		protected Bitmap doInBackground(DilbertReader... params) {
 			Bitmap downloadedImage = params[0].readCurrent();
-	    	return downloadedImage;
-	    }
+			return downloadedImage;
+		}
 
-	    protected void onPostExecute(Bitmap downloadedImage) {
-	    	updateNavigationButtonStates();
+		@Override
+		protected void onPostExecute(Bitmap downloadedImage) {
+			updateNavigationButtonStates();
 			updateTitle();
-	    	setFinbertImage(downloadedImage);
-	    	
-	    	if(dialog.isShowing()) {
-	    		dialog.dismiss();
-	    	}
-	    }
+			setFinbertImage(downloadedImage);
+
+			if (dialog.isShowing()) {
+				dialog.dismiss();
+			}
+		}
 	}
-	
-	public Finbert() {
+
+	public StripBrowserActivity() {
 		dilbertReader = DilbertReader.getInstance();
 	}
 
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.main);
-        
-        imageSwitcher = (ImageSwitcher) findViewById(R.id.dilbert_image_switcher);
-        /* use fade-in for first image */
-        imageSwitcher.setInAnimation(this, R.anim.fade_in_animation);
-        imageSwitcher.setFactory(this);
-        
-        nextButton = (ImageView) findViewById(R.id.next);
-        prevButton = (ImageView) findViewById(R.id.previous);
-        
-        fetchNewFinbert();
-    }
- 
-    public void buttonListener(View v) {
-    	if(v == findViewById(R.id.next)) {
-    		dilbertReader.nextDay();
-    		setNextTransitionDirection(Direction.RIGHT);
-    	} else if(v == findViewById(R.id.previous)) {
-    		dilbertReader.previousDay();
-    		setNextTransitionDirection(Direction.LEFT);
-    	} 
-    	fetchNewFinbert();
-    }
-    
-    private void setNextTransitionDirection(Direction direction) {
-    	boolean fromLeft = direction == Direction.LEFT? true : false;
-        imageSwitcher.setInAnimation(AnimationUtils.makeInAnimation(this, fromLeft));
-        imageSwitcher.setOutAnimation(AnimationUtils.makeOutAnimation(this, fromLeft));
-    }
-    
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.main);
+
+		imageSwitcher = (ImageSwitcher) findViewById(R.id.dilbert_image_switcher);
+		/* use fade-in for first image */
+		imageSwitcher.setInAnimation(this, R.anim.fade_in_animation);
+		imageSwitcher.setFactory(this);
+
+		nextButton = (ImageView) findViewById(R.id.next);
+		prevButton = (ImageView) findViewById(R.id.previous);
+
+		fetchNewFinbert();
+	}
+
+	public void buttonListener(View v) {
+		if (v == findViewById(R.id.next)) {
+			dilbertReader.nextDay();
+			setNextTransitionDirection(Direction.RIGHT);
+		} else if (v == findViewById(R.id.previous)) {
+			dilbertReader.previousDay();
+			setNextTransitionDirection(Direction.LEFT);
+		}
+		fetchNewFinbert();
+	}
+
+	private void setNextTransitionDirection(Direction direction) {
+		boolean fromLeft = direction == Direction.LEFT ? true : false;
+		imageSwitcher.setInAnimation(AnimationUtils.makeInAnimation(this, fromLeft));
+		imageSwitcher.setOutAnimation(AnimationUtils.makeOutAnimation(this, fromLeft));
+	}
+
 	private void fetchNewFinbert() {
 		new BackgroundDownloader().execute(dilbertReader);
 	}
 
 	private void updateNavigationButtonStates() {
 		nextButton.setEnabled(dilbertReader.isNextAvailable());
-    	prevButton.setEnabled(dilbertReader.isPreviousAvailable());
+		prevButton.setEnabled(dilbertReader.isPreviousAvailable());
 	}
-	
+
 	private void updateTitle() {
 		setTitle("Finbert - " + dilbertReader.getCurrentDate());
 	}
@@ -103,11 +107,10 @@ public final class Finbert extends Activity implements ViewFactory {
 		BitmapDrawable bitmapDrawable = new BitmapDrawable(getResources(), downloadedImage);
 		imageSwitcher.setImageDrawable(bitmapDrawable);
 	}
-	
+
 	/**
 	 * Generates views for {@link ImageSwitcher}
 	 */
-	
 	@Override
 	public View makeView() {
 		ImageView view = new ImageView(this);
