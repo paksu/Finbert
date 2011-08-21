@@ -3,6 +3,7 @@ package paksu.finbert;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.graphics.Bitmap;
+import android.graphics.Typeface;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -13,9 +14,8 @@ import android.widget.FrameLayout;
 import android.widget.ImageSwitcher;
 import android.widget.ImageView;
 import android.widget.ImageView.ScaleType;
+import android.widget.TextView;
 import android.widget.ViewSwitcher.ViewFactory;
-
-import com.helloandroid.R;
 
 public final class StripBrowserActivity extends Activity implements ViewFactory {
 	private enum Direction {
@@ -60,7 +60,7 @@ public final class StripBrowserActivity extends Activity implements ViewFactory 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.main);
+		setContentView(R.layout.strip_browser);
 
 		imageSwitcher = (ImageSwitcher) findViewById(R.id.dilbert_image_switcher);
 		/* use fade-in for first image */
@@ -70,7 +70,13 @@ public final class StripBrowserActivity extends Activity implements ViewFactory 
 		nextButton = (ImageView) findViewById(R.id.next);
 		prevButton = (ImageView) findViewById(R.id.previous);
 
+		setFonts();
 		fetchNewFinbert();
+	}
+
+	private void setFonts() {
+		Typeface customTypeFace = Typeface.createFromAsset(getAssets(), "default_font.ttf");
+		((TextView) findViewById(R.id.share_text)).setTypeface(customTypeFace);
 	}
 
 	public void buttonListener(View v) {

@@ -7,10 +7,14 @@
 	android:background="#ffffff">
 	<RelativeLayout
 		android:layout_width="fill_parent"
-		android:layout_height="46dp"
-		android:padding="3dp">
+		android:layout_height="40dp"
+		android:paddingTop="3dp"
+		android:paddingBottom="3dp"
+		android:paddingLeft="5dp"
+		android:paddingRight="15dp"
+		android:background="@drawable/top_bar_background">
 		<ImageView
-			android:layout_height="40dp"
+			android:layout_height="fill_parent"
 			android:layout_width="wrap_content"
 			android:scaleType="fitCenter"
 			android:src="@drawable/finbert_logo"></ImageView>
@@ -18,7 +22,7 @@
 			android:id="@+id/twitter_button"
 			android:layout_height="wrap_content"
 			android:layout_width="wrap_content"
-			android:layout_marginLeft="3dp"
+			android:layout_marginLeft="10dp"
 			android:background="@drawable/twitter_button"
 			android:scaleType="fitCenter"
 			android:layout_alignParentRight="true" />
@@ -26,20 +30,26 @@
 			android:id="@+id/facebook_button"
 			android:layout_height="wrap_content"
 			android:layout_width="wrap_content"
+			android:layout_marginLeft="5dp"
 			android:background="@drawable/facebook_button"
 			android:scaleType="fitCenter"
 			android:layout_toLeftOf="@id/twitter_button" />
 		<TextView
-			android:layout_height="wrap_content"
+			android:id="@+id/share_text"
+			android:layout_height="fill_parent"
 			android:layout_width="wrap_content"
-			android:text="share: "
+			android:gravity="center_vertical"
+			android:textColor="#000000"
+			android:textSize="18dp"
+			android:text="@string/share"
 			android:layout_toLeftOf="@id/facebook_button" />
 	</RelativeLayout>
 	<LinearLayout
 		android:layout_width="fill_parent"
 		android:layout_height="wrap_content"
 		android:orientation="vertical"
-		android:layout_weight="5">
+		android:layout_weight="5"
+		android:background="#000000">
 		<ImageSwitcher
 			android:id="@+id/dilbert_image_switcher"
 			android:layout_width="fill_parent"
@@ -51,14 +61,14 @@
 		android:layout_width="fill_parent"
 		android:gravity="bottom"
 		android:layout_height="50dp"
-		android:padding="3dp">
+		android:padding="3dp"
+		android:background="@drawable/top_bar_background">
 		<ImageView
 			android:id="@+id/previous"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
 			android:layout_marginLeft="10dip"
 			android:layout_weight="2"
-			android:text="@string/prev"
 			android:layout_alignParentLeft="true"
 			android:scaleType="fitCenter"
 			android:src="@drawable/arrow_left"
@@ -69,7 +79,6 @@
 			android:layout_height="wrap_content"
 			android:layout_marginLeft="10dip"
 			android:layout_weight="2"
-			android:text="@string/prev"
 			android:layout_toRightOf="@id/previous"
 			android:scaleType="fitCenter"
 			android:src="@drawable/arrow_right"
