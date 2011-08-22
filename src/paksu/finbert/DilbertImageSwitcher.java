@@ -112,10 +112,14 @@ public final class DilbertImageSwitcher extends ImageSwitcher implements Animati
 	}
 
 	private void queueAnimation(AnimationParams params) {
-		if (queuedAnims.isEmpty() && animationsRunning == 0) {
-			playAnimation(params);
-		} else {
-			queuedAnims.add(params);
+		queuedAnims.add(params);
+		processAnimQueue();
+	}
+
+	private void processAnimQueue() {
+		if (!queuedAnims.isEmpty() && animationsRunning == 0) {
+			AnimationParams nextAnimParams = queuedAnims.poll();
+			playAnimation(nextAnimParams);
 		}
 	}
 
@@ -141,12 +145,7 @@ public final class DilbertImageSwitcher extends ImageSwitcher implements Animati
 	@Override
 	public void onAnimationEnd(Animation animation) {
 		animationsRunning--;
-		if (animationsRunning == 0) {
-			if (!queuedAnims.isEmpty()) {
-				AnimationParams nextAnimParams = queuedAnims.poll();
-				playAnimation(nextAnimParams);
-			}
-		}
+		processAnimQueue();
 	}
 
 	@Override

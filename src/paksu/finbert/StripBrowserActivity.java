@@ -77,7 +77,8 @@ public final class StripBrowserActivity extends Activity implements ViewFactory 
 		prevButton = (ImageView) findViewById(R.id.previous);
 
 		setFonts();
-		fetchNewFinbert();
+		fadeToTemporary();
+		fetchFirstFinbert();
 	}
 
 	private void setFonts() {
@@ -129,6 +130,10 @@ public final class StripBrowserActivity extends Activity implements ViewFactory 
 		setTitle("Finbert - " + dilbertReader.getCurrentDate());
 	}
 
+	private void fetchFirstFinbert() {
+		new BackgroundDownloader().execute();
+	}
+
 	private void fetchNewFinbert() {
 		if (dilbertReader.hasCurrentCached()) {
 			slideToCurrent();
@@ -144,6 +149,10 @@ public final class StripBrowserActivity extends Activity implements ViewFactory 
 
 	private void fadeToCurrent() {
 		imageSwitcher.fadeToDrawable(currentDilbertDrawable(), ScaleType.FIT_CENTER);
+	}
+
+	private void fadeToTemporary() {
+		imageSwitcher.fadeToDrawable(temporaryDrawable(), ScaleType.CENTER_INSIDE);
 	}
 
 	private void slideToTemporary() {
