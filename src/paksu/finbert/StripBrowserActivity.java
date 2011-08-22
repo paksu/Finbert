@@ -3,12 +3,12 @@ package paksu.finbert;
 import paksu.finbert.DilbertImageSwitcher.Direction;
 import paksu.finbert.DilbertImageSwitcher.OnFlingListener;
 import android.app.Activity;
+import android.content.Intent;
 import android.graphics.Typeface;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.FrameLayout;
@@ -93,7 +93,8 @@ public final class StripBrowserActivity extends Activity implements ViewFactory 
 
 	public void buttonListener(View v) {
 		if (v == findViewById(R.id.comments_bubble)) {
-			Log.d("finbert", "bubble clicked");
+			launchCommentsActivityForCurrentDate();
+			return;
 		}
 
 		if (isFetchingImage) {
@@ -170,6 +171,13 @@ public final class StripBrowserActivity extends Activity implements ViewFactory 
 
 	private Drawable temporaryDrawable() {
 		return getResources().getDrawable(R.drawable.loading_face);
+	}
+
+	private void launchCommentsActivityForCurrentDate() {
+		String date = dilbertReader.getCurrentDate();
+		Intent intent = new Intent(this, CommentsActivity.class);
+		intent.putExtra(CommentsActivity.EXTRAS_DATE, date);
+		startActivity(intent);
 	}
 
 	/**
