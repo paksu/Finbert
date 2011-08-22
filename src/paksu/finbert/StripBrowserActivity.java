@@ -8,11 +8,9 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.FrameLayout;
-import android.widget.ImageSwitcher;
 import android.widget.ImageView;
 import android.widget.ImageView.ScaleType;
 import android.widget.TextView;
@@ -161,11 +159,10 @@ public final class StripBrowserActivity extends Activity implements ViewFactory 
 	}
 
 	/**
-	 * Generates views for {@link ImageSwitcher}
+	 * Generates views for {@link DilbertImageSwitcher}
 	 */
 	@Override
 	public View makeView() {
-		Log.d("finbert", "joo");
 		ImageView view = new ImageView(this);
 		view.setScaleType(ScaleType.FIT_CENTER);
 		view.setLayoutParams(new FrameLayout.LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT));
