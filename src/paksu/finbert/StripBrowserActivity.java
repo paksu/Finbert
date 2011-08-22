@@ -40,6 +40,7 @@ public final class StripBrowserActivity extends Activity implements ViewFactory 
 		@Override
 		protected void onPostExecute(Void result) {
 			isFetchingImage = false;
+			updateNavigationButtonStates();
 			fadeToCurrent();
 		}
 	}
@@ -113,20 +114,13 @@ public final class StripBrowserActivity extends Activity implements ViewFactory 
 	private void changeToNextDay() {
 		dilbertReader.nextDay();
 		nextSlideDirection = Direction.RIGHT;
-		updateGUI();
 		fetchNewFinbert();
 	}
 
 	private void changeToPreviousDay() {
 		dilbertReader.previousDay();
 		nextSlideDirection = Direction.LEFT;
-		updateGUI();
 		fetchNewFinbert();
-	}
-
-	private void updateGUI() {
-		updateNavigationButtonStates();
-		updateTitle();
 	}
 
 	private void updateNavigationButtonStates() {
@@ -145,8 +139,11 @@ public final class StripBrowserActivity extends Activity implements ViewFactory 
 	private void fetchNewFinbert() {
 		if (dilbertReader.hasCurrentCached()) {
 			slideToCurrent();
+			updateNavigationButtonStates();
+			updateTitle();
 		} else {
 			slideToTemporary();
+			updateTitle();
 			new BackgroundDownloader().execute();
 		}
 	}

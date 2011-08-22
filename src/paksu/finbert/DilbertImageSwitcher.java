@@ -27,14 +27,14 @@ public final class DilbertImageSwitcher extends ImageSwitcher implements Animati
 		LEFT, RIGHT
 	}
 
-	private class AnimationParams {
+	private class TransitionParams {
 		private Animation inAnim;
 		private Animation outAnim;
 		private Drawable targetDrawable;
 		private ScaleType scaleType;
 	}
 
-	private final Queue<AnimationParams> queuedAnims = new LinkedBlockingQueue<AnimationParams>();
+	private final Queue<TransitionParams> queuedTransitions = new LinkedBlockingQueue<TransitionParams>();
 
 	private OnFlingListener onFlingListener;
 
@@ -89,16 +89,16 @@ public final class DilbertImageSwitcher extends ImageSwitcher implements Animati
 	}
 
 	public void fadeToDrawable(Drawable drawable, ScaleType scaleType) {
-		AnimationParams params = new AnimationParams();
+		TransitionParams params = new TransitionParams();
 		params.targetDrawable = drawable;
 		params.scaleType = scaleType;
 		params.inAnim = AnimationUtils.loadAnimation(getContext(), R.anim.fade_in);
 		params.outAnim = AnimationUtils.loadAnimation(getContext(), R.anim.fade_out);
-		queueAnimation(params);
+		queueTransition(params);
 	}
 
 	public void slideToDrawable(Drawable drawable, ScaleType scaleType, Direction direction) {
-		AnimationParams params = new AnimationParams();
+		TransitionParams params = new TransitionParams();
 		params.targetDrawable = drawable;
 		params.scaleType = scaleType;
 		if (direction == Direction.LEFT) {
@@ -108,22 +108,22 @@ public final class DilbertImageSwitcher extends ImageSwitcher implements Animati
 			params.inAnim = AnimationUtils.loadAnimation(getContext(), R.anim.slide_from_right);
 			params.outAnim = AnimationUtils.loadAnimation(getContext(), R.anim.slide_to_left);
 		}
-		queueAnimation(params);
+		queueTransition(params);
 	}
 
-	private void queueAnimation(AnimationParams params) {
-		queuedAnims.add(params);
-		processAnimQueue();
+	private void queueTransition(TransitionParams params) {
+		queuedTransitions.add(params);
+		processTransitionQueue();
 	}
 
-	private void processAnimQueue() {
-		if (!queuedAnims.isEmpty() && animationsRunning == 0) {
-			AnimationParams nextAnimParams = queuedAnims.poll();
-			playAnimation(nextAnimParams);
+	private void processTransitionQueue() {
+		if (!queuedTransitions.isEmpty() && animationsRunning == 0) {
+			TransitionParams nextTransitionParams = queuedTransitions.poll();
+			doTransition(nextTransitionParams);
 		}
 	}
 
-	private void playAnimation(AnimationParams params) {
+	private void doTransition(TransitionParams params) {
 		ImageView nextView = (ImageView) getNextView();
 		nextView.setScaleType(params.scaleType);
 		setInAnimation(params.inAnim);
@@ -145,7 +145,7 @@ public final class DilbertImageSwitcher extends ImageSwitcher implements Animati
 	@Override
 	public void onAnimationEnd(Animation animation) {
 		animationsRunning--;
-		processAnimQueue();
+		processTransitionQueue();
 	}
 
 	@Override
