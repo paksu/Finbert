@@ -59,7 +59,7 @@
 		android:orientation="horizontal"
 		android:layout_width="fill_parent"
 		android:gravity="bottom"
-		android:layout_height="50dp"
+		android:layout_height="60dp"
 		android:padding="3dp"
 		android:background="@drawable/top_bar_background">
 		<ImageView
@@ -69,6 +69,7 @@
 			android:layout_marginLeft="10dip"
 			android:layout_weight="2"
 			android:layout_alignParentLeft="true"
+			android:layout_alignParentBottom="true"
 			android:scaleType="fitCenter"
 			android:src="@drawable/arrow_left"
 			android:onClick="buttonListener" />
@@ -79,6 +80,7 @@
 			android:layout_marginLeft="10dip"
 			android:layout_weight="2"
 			android:layout_toRightOf="@id/previous"
+			android:layout_alignParentBottom="true"
 			android:scaleType="fitCenter"
 			android:src="@drawable/arrow_right"
 			android:onClick="buttonListener" />
@@ -87,13 +89,47 @@
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
 			android:layout_alignParentRight="true"
-			android:src="@drawable/finbert_face" />
-		<Button
+			android:layout_alignParentBottom="true"
+			android:src="@drawable/finbert_face"
+			android:layout_marginRight="5dp"
+			android:layout_marginLeft="7dp" />
+		<RelativeLayout
 			android:id="@+id/comments_bubble"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
-			android:text="kommentit"
 			android:layout_toLeftOf="@id/dilbert_face"
-			android:onClick="buttonListener" />
+			android:layout_alignParentBottom="true"
+			android:gravity="right"
+			android:background="@drawable/bubble"
+			android:onClick="buttonListener"
+			android:orientation="vertical">
+			<TextView
+				android:id="@+id/comments"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:textSize="12dp"
+				android:textColor="#000000"
+				android:text="@string/comments"></TextView>
+			<TextView
+				android:id="@+id/comments_count"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:textColor="#ff0000"
+				android:textSize="12dp"
+				android:layout_toRightOf="@id/comments"
+				android:layout_marginLeft="5dp"
+				android:text="67"></TextView>
+			<TextView
+				android:id="@+id/click_to_comment"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:layout_below="@id/comments"
+				android:textSize="16dp"
+				android:textColor="#ffffff"
+				android:shadowColor="#000000"
+				android:shadowRadius="2"
+				android:padding="2dp"
+				android:text="@string/click_to_comment"></TextView>
+		</RelativeLayout>
 	</RelativeLayout>
 </LinearLayout>

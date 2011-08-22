@@ -2,4 +2,6 @@
 <resources>
     <string name="app_name">Finbert</string>
     <string name="share">share:</string>
+    <string name="comments">comments:</string>
+    <string name="click_to_comment">click to comment</string>
 </resources>

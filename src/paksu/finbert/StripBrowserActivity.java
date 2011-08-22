@@ -8,6 +8,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.FrameLayout;
@@ -84,9 +85,16 @@ public final class StripBrowserActivity extends Activity implements ViewFactory 
 	private void setFonts() {
 		Typeface customTypeFace = Typeface.createFromAsset(getAssets(), "default_font.ttf");
 		((TextView) findViewById(R.id.share_text)).setTypeface(customTypeFace);
+		((TextView) findViewById(R.id.click_to_comment)).setTypeface(customTypeFace);
+		((TextView) findViewById(R.id.comments)).setTypeface(customTypeFace);
+		((TextView) findViewById(R.id.comments_count)).setTypeface(customTypeFace);
 	}
 
 	public void buttonListener(View v) {
+		if (v == findViewById(R.id.comments_bubble)) {
+			Log.d("finbert", "bubble clicked");
+		}
+
 		if (isFetchingImage) {
 			return;
 		}
