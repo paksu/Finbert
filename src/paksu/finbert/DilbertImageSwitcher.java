@@ -10,6 +10,8 @@ import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageSwitcher;
+import android.widget.ImageView;
+import android.widget.ImageView.ScaleType;
 
 public final class DilbertImageSwitcher extends ImageSwitcher {
 	public interface OnFlingListener {
@@ -70,16 +72,20 @@ public final class DilbertImageSwitcher extends ImageSwitcher {
 		});
 	}
 
-	public void fadeToDrawable(Drawable drawable) {
+	public void fadeToDrawable(Drawable drawable, ScaleType scaleType) {
 		setInAnimation(getContext(), android.R.anim.fade_in);
 		setOutAnimation(getContext(), android.R.anim.fade_out);
+
+		((ImageView) getNextView()).setScaleType(scaleType);
 		setImageDrawable(drawable);
 	}
 
-	public void slideToDrawable(Drawable drawable, Direction direction) {
+	public void slideToDrawable(Drawable drawable, ScaleType scaleType, Direction direction) {
 		boolean fromLeft = direction == Direction.LEFT ? true : false;
 		setInAnimation(AnimationUtils.makeInAnimation(getContext(), fromLeft));
 		setOutAnimation(AnimationUtils.makeOutAnimation(getContext(), fromLeft));
+
+		((ImageView) getNextView()).setScaleType(scaleType);
 		setImageDrawable(drawable);
 	}
 
