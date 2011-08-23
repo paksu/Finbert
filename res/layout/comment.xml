@@ -8,9 +8,9 @@
 	android:paddingBottom="5dp"
 	android:paddingRight="10dp">
 	<LinearLayout
+		android:id="@+id/comment_layout"
 		android:layout_width="fill_parent"
 		android:layout_height="wrap_content"
-		android:background="@drawable/bubble"
 		android:orientation="vertical">
 		<TextView
 			android:id="@+id/commenter"

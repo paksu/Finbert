@@ -9,7 +9,6 @@ import java.util.List;
 import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,7 +22,7 @@ import android.widget.TextView;
 public final class CommentsActivity extends Activity {
 	public static final String EXTRAS_DATE = "date";
 
-	private class CommentsAdapter extends ArrayAdapter<Comment> {
+	private static class CommentsAdapter extends ArrayAdapter<Comment> {
 
 		public CommentsAdapter(Context context, int textViewResourceId, List<Comment> objects) {
 			super(context, textViewResourceId, objects);
@@ -31,12 +30,19 @@ public final class CommentsActivity extends Activity {
 
 		@Override
 		public View getView(int position, View convertView, ViewGroup parent) {
-			Log.d("finbert", "fetching comment for pos " + position);
 			Comment comment = getItem(position);
-			View commentItem;
-			commentItem = LayoutInflater.from(getContext()).inflate(R.layout.comment, null);
+			View commentItem = LayoutInflater.from(getContext()).inflate(R.layout.comment, null);
+
+			View commentLayout = commentItem.findViewById(R.id.comment_layout);
+			if (position % 2 == 0) {
+				commentLayout.setBackgroundDrawable(getContext().getResources().getDrawable(R.drawable.bubble_right));
+			} else {
+				commentLayout.setBackgroundDrawable(getContext().getResources().getDrawable(R.drawable.bubble_left));
+			}
+
 			TextView commenterTextView = (TextView) commentItem.findViewById(R.id.commenter);
 			commenterTextView.setText(comment.getName());
+
 			TextView commentTextView = (TextView) commentItem.findViewById(R.id.comment);
 			commentTextView.setText(comment.getComment());
 			return commentItem;
