@@ -53,9 +53,9 @@ public final class DilbertImageSwitcher extends ImageSwitcher implements Animati
 
 		@Override
 		public boolean onFling(MotionEvent e1, MotionEvent e2, float xVelocity, float yVelocity) {
-			if (Math.abs(e1.getY() - e2.getY()) < scaledMaxYMovement
-						&& Math.abs(e1.getX() - e2.getX()) > scaledMinXMovement) {
-				if (Math.abs(xVelocity) > scaledMinFlingVelocity && Math.abs(xVelocity) < scaledMaxFlingVelocity) {
+			if (traveledYDistanceIsLessThanMax(e1.getY(), e2.getY())
+					&& traveledXDistanceIsMoreThanMin(e1.getX(), e2.getX())) {
+				if (xVelocityIsWithinAllowed(xVelocity)) {
 					Direction flingDirection = e1.getX() > e2.getX() ? Direction.LEFT : Direction.RIGHT;
 					if (onFlingListener != null) {
 						onFlingListener.onFling(flingDirection);
@@ -65,6 +65,19 @@ public final class DilbertImageSwitcher extends ImageSwitcher implements Animati
 			}
 			return false;
 		}
+
+		public boolean traveledYDistanceIsLessThanMax(float y1, float y2) {
+			return Math.abs(y1 - y2) < scaledMaxYMovement;
+		}
+
+		public boolean traveledXDistanceIsMoreThanMin(float x1, float x2) {
+			return Math.abs(x1 - x2) > scaledMinXMovement;
+		}
+
+		public boolean xVelocityIsWithinAllowed(float xVelocity) {
+			return Math.abs(xVelocity) > scaledMinFlingVelocity && Math.abs(xVelocity) < scaledMaxFlingVelocity;
+		}
+
 	};
 
 	private final GestureDetector gestureDetector;
@@ -117,10 +130,14 @@ public final class DilbertImageSwitcher extends ImageSwitcher implements Animati
 	}
 
 	private void processTransitionQueue() {
-		if (!queuedTransitions.isEmpty() && animationsRunning == 0) {
+		if (!queuedTransitions.isEmpty() && !hasUnfinishedAnimationsRunning()) {
 			TransitionParams nextTransitionParams = queuedTransitions.poll();
 			doTransition(nextTransitionParams);
 		}
+	}
+
+	private boolean hasUnfinishedAnimationsRunning() {
+		return animationsRunning > 0;
 	}
 
 	private void doTransition(TransitionParams params) {

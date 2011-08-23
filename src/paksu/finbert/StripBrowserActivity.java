@@ -50,13 +50,9 @@ public final class StripBrowserActivity extends Activity implements ViewFactory 
 		public void onFling(Direction direction) {
 			if (!isFetchingImage) {
 				if (direction == Direction.LEFT) {
-					if (dilbertReader.isNextAvailable()) {
-						changeToNextDay();
-					}
+					changeToNextDayIfAvailable();
 				} else if (direction == Direction.RIGHT) {
-					if (dilbertReader.isPreviousAvailable()) {
-						changeToPreviousDay();
-					}
+					changeToPreviousDayIfAvailable();
 				}
 			}
 		}
@@ -80,7 +76,7 @@ public final class StripBrowserActivity extends Activity implements ViewFactory 
 
 		setFonts();
 		fadeToTemporary();
-		fetchFirstFinbert();
+		downloadAndFadeToCurrent();
 	}
 
 	private void setFonts() {
@@ -92,7 +88,7 @@ public final class StripBrowserActivity extends Activity implements ViewFactory 
 	}
 
 	public void buttonListener(View v) {
-		if (v == findViewById(R.id.comments_bubble)) {
+		if (v.getId() == R.id.comments_bubble) {
 			launchCommentsActivityForCurrentDate();
 			return;
 		}
@@ -101,27 +97,27 @@ public final class StripBrowserActivity extends Activity implements ViewFactory 
 			return;
 		}
 
-		if (v == findViewById(R.id.next)) {
-			if (dilbertReader.isNextAvailable()) {
-				changeToNextDay();
-			}
-		} else if (v == findViewById(R.id.previous)) {
-			if (dilbertReader.isPreviousAvailable()) {
-				changeToPreviousDay();
-			}
+		if (v.getId() == R.id.next) {
+			changeToNextDayIfAvailable();
+		} else if (v.getId() == R.id.previous) {
+			changeToPreviousDayIfAvailable();
 		}
 	}
 
-	private void changeToNextDay() {
-		dilbertReader.nextDay();
-		nextSlideDirection = Direction.RIGHT;
-		fetchNewFinbert();
+	private void changeToNextDayIfAvailable() {
+		if (dilbertReader.isNextAvailable()) {
+			dilbertReader.nextDay();
+			nextSlideDirection = Direction.RIGHT;
+			fetchNewFinbert();
+		}
 	}
 
-	private void changeToPreviousDay() {
-		dilbertReader.previousDay();
-		nextSlideDirection = Direction.LEFT;
-		fetchNewFinbert();
+	private void changeToPreviousDayIfAvailable() {
+		if (dilbertReader.isPreviousAvailable()) {
+			dilbertReader.previousDay();
+			nextSlideDirection = Direction.LEFT;
+			fetchNewFinbert();
+		}
 	}
 
 	private void updateNavigationButtonStates() {
@@ -133,20 +129,20 @@ public final class StripBrowserActivity extends Activity implements ViewFactory 
 		setTitle("Finbert - " + dilbertReader.getCurrentDate());
 	}
 
-	private void fetchFirstFinbert() {
-		new BackgroundDownloader().execute();
-	}
-
 	private void fetchNewFinbert() {
 		if (dilbertReader.hasCurrentCached()) {
+			updateTitle();
 			slideToCurrent();
 			updateNavigationButtonStates();
-			updateTitle();
 		} else {
-			slideToTemporary();
 			updateTitle();
-			new BackgroundDownloader().execute();
+			slideToTemporary();
+			downloadAndFadeToCurrent();
 		}
+	}
+
+	private void downloadAndFadeToCurrent() {
+		new BackgroundDownloader().execute();
 	}
 
 	private void slideToCurrent() {
@@ -174,9 +170,8 @@ public final class StripBrowserActivity extends Activity implements ViewFactory 
 	}
 
 	private void launchCommentsActivityForCurrentDate() {
-		String date = dilbertReader.getCurrentDate();
 		Intent intent = new Intent(this, CommentsActivity.class);
-		intent.putExtra(CommentsActivity.EXTRAS_DATE, date);
+		intent.putExtra(CommentsActivity.EXTRAS_DATE, dilbertReader.getCurrentDate());
 		startActivity(intent);
 	}
 
