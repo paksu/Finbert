@@ -10,39 +10,41 @@
 		android:layout_height="40dp"
 		android:paddingTop="3dp"
 		android:paddingBottom="3dp"
-		android:paddingLeft="5dp"
-		android:paddingRight="15dp"
-		android:background="@drawable/top_bar_background">
+		android:paddingRight="10dp"
+		android:paddingLeft="10dp"
+		android:background="@drawable/top_bar_background"
+		android:layoutAnimation="@anim/fade_in_layout">
 		<ImageView
 			android:layout_height="fill_parent"
 			android:layout_width="wrap_content"
 			android:scaleType="fitCenter"
+			android:layout_alignParentLeft="true"
 			android:src="@drawable/finbert_logo"></ImageView>
+		<ImageButton
+			android:id="@+id/facebook_button"
+			android:layout_height="wrap_content"
+			android:layout_width="wrap_content"
+			android:layout_marginLeft="5dp"
+			android:layout_alignParentRight="true"
+			android:background="@drawable/facebook_button"
+			android:scaleType="fitCenter" />
 		<ImageButton
 			android:id="@+id/twitter_button"
 			android:layout_height="wrap_content"
 			android:layout_width="wrap_content"
 			android:layout_marginLeft="10dp"
 			android:background="@drawable/twitter_button"
-			android:scaleType="fitCenter"
-			android:layout_alignParentRight="true" />
-		<ImageButton
-			android:id="@+id/facebook_button"
-			android:layout_height="wrap_content"
-			android:layout_width="wrap_content"
-			android:layout_marginLeft="5dp"
-			android:background="@drawable/facebook_button"
-			android:scaleType="fitCenter"
-			android:layout_toLeftOf="@id/twitter_button" />
+			android:layout_toLeftOf="@id/facebook_button"
+			android:scaleType="fitCenter" />
 		<TextView
 			android:id="@+id/share_text"
 			android:layout_height="fill_parent"
 			android:layout_width="wrap_content"
 			android:gravity="center_vertical"
+			android:layout_toLeftOf="@id/twitter_button"
 			android:textColor="#000000"
 			android:textSize="18dp"
-			android:text="@string/share"
-			android:layout_toLeftOf="@id/facebook_button" />
+			android:text="@string/share" />
 	</RelativeLayout>
 	<LinearLayout
 		android:layout_width="fill_parent"
@@ -61,7 +63,8 @@
 		android:gravity="bottom"
 		android:layout_height="60dp"
 		android:padding="3dp"
-		android:background="@drawable/top_bar_background">
+		android:background="@drawable/top_bar_background"
+		android:layoutAnimation="@anim/fade_in_layout">
 		<ImageView
 			android:id="@+id/previous"
 			android:layout_width="wrap_content"
@@ -102,7 +105,8 @@
 			android:gravity="right"
 			android:background="@drawable/bubble"
 			android:onClick="buttonListener"
-			android:orientation="vertical">
+			android:orientation="vertical"
+			android:layoutAnimation="@anim/fade_in_layout">
 			<TextView
 				android:id="@+id/comments"
 				android:layout_width="wrap_content"
