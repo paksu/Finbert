@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.util.HashMap;
 
@@ -21,6 +22,7 @@ public final class DilbertReader {
 	private static DilbertReader instance = null;
 	private final HashMap<String, Boolean> availabilityCache;
 	private final ImageCache imageCache;
+	private final int timeOutDelay = 30 * 1000; // 30 seconds
 
 	protected DilbertReader() {
 		availabilityCache = new HashMap<String, Boolean>();
@@ -61,12 +63,15 @@ public final class DilbertReader {
 						.openConnection();
 				conn.setDoInput(true);
 				conn.connect();
+				conn.setConnectTimeout(timeOutDelay);
 				InputStream is = conn.getInputStream();
 				picture = BitmapFactory.decodeStream(is);
 				imageCache.set(date, picture);
 				availabilityCache.put(date, true);
 				Log.d("finbert", "Downloaded and cached image for date:" + date);
-
+			} catch (SocketTimeoutException e) {
+				// TODO
+				e.printStackTrace();
 			} catch (IOException e) {
 				e.printStackTrace();
 				throw new RuntimeException(e);

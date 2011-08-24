@@ -1,18 +1,42 @@
 package paksu.finbert;
 
+import static org.junit.Assert.assertNotNull;
+
 import org.junit.Test;
 
+import com.google.gson.JsonParseException;
+
 public class CommentHandlerTest {
+
 	@Test
 	public void testSetComment() {
-		// fail("Not yet implemented");
+		System.out.println("Testing setComment()");
+		CommentHandler ch = new CommentHandler();
+		boolean response;
+		try {
+			response = ch.setComment(new Comment("testComment", "joona", "2011-08-20"));
+			System.out.println(response);
+		} catch (NetworkException e) {
+			assertNotNull(e);
+		}
+
 	}
 
 	@Test
 	public void testGetComments() {
-		// System.out.println("Testing setComment()");
-		// CommentHandler ch = new CommentHandler();
-		// assertNotNull(ch.getComments("2011-08-18"));
+		System.out.println("Testing getComments()");
+		CommentHandler ch = new CommentHandler();
+		String response;
+		try {
+			response = ch.getComments("2011-08-20").toString();
+			System.out.println(response);
+			assertNotNull(response);
+		} catch (NetworkException e) {
+			assertNotNull(e);
+		} catch (JsonParseException e) {
+			assertNotNull(e);
+		}
+
 	}
 
 }

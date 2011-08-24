@@ -5,10 +5,6 @@ public class Comment {
 	private String name;
 	private String date; // TODO => DateTime ?
 
-	public Comment() {
-		// TODO Auto-generated constructor stub
-	}
-
 	public Comment(String comment, String name, String date) {
 		this.comment = comment;
 		this.name = name;
