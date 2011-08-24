@@ -35,6 +35,10 @@ public final class DilbertReader {
 		return instance;
 	}
 
+	public boolean hasCurrentCached() {
+		return imageCache.get(getCurrentDate()) != null;
+	}
+
 	public Bitmap readCurrent() {
 		Bitmap picture = null;
 		URL dilbertUrl;
@@ -101,14 +105,16 @@ public final class DilbertReader {
 	public void nextDay() {
 		dt = dt.plusDays(1);
 		if (dt.getDayOfWeek() > 5) {
-			while (dt.getDayOfWeek() != 1)
+			while (dt.getDayOfWeek() != 1) {
 				dt = dt.plusDays(1);
+			}
 		}
 	}
 
 	public String getCurrentDate() {
-		while (dt.getDayOfWeek() > 5)
+		while (dt.getDayOfWeek() > 5) {
 			dt = dt.minusDays(1);
+		}
 		Log.d("finbert",
 				"Current date:" + Integer.toString(dt.getYear()) + "-"
 						+ Integer.toString(dt.getMonthOfYear()) + "-"
@@ -122,8 +128,9 @@ public final class DilbertReader {
 		DateTime nextDay = dt;
 		nextDay = nextDay.plusDays(1);
 		if (nextDay.getDayOfWeek() > 5) {
-			while (nextDay.getDayOfWeek() != 1)
+			while (nextDay.getDayOfWeek() != 1) {
 				nextDay = nextDay.plusDays(1);
+			}
 		}
 		return Integer.toString(nextDay.getYear()) + "-"
 				+ Integer.toString(nextDay.getMonthOfYear()) + "-"
@@ -133,8 +140,9 @@ public final class DilbertReader {
 	private String peekPreviousDate() {
 		DateTime previousDay = dt;
 		previousDay = previousDay.minusDays(1);
-		while (previousDay.getDayOfWeek() > 5)
+		while (previousDay.getDayOfWeek() > 5) {
 			previousDay = previousDay.minusDays(1);
+		}
 		return Integer.toString(previousDay.getYear()) + "-"
 				+ Integer.toString(previousDay.getMonthOfYear()) + "-"
 				+ Integer.toString(previousDay.getDayOfMonth());
@@ -157,8 +165,7 @@ public final class DilbertReader {
 			}
 
 			try {
-				HttpURLConnection conn = (HttpURLConnection) dilbertUrl
-						.openConnection();
+				HttpURLConnection conn = (HttpURLConnection) dilbertUrl.openConnection();
 				conn.setDoInput(true);
 				conn.connect();
 				conn.getInputStream();

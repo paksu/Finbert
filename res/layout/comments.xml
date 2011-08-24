@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="fill_parent"
+	android:layout_height="fill_parent"
+	android:orientation="vertical">
+	<ListView
+		android:id="@+id/comments_list"
+		android:layout_width="fill_parent"
+		android:layout_height="fill_parent"
+		android:layout_weight="2"
+		android:dividerHeight="0dp"
+		android:divider="#ffffff"
+		android:background="#ffffff"
+		android:listSelector="#ffffff"
+		android:cacheColorHint="#ffffff"
+		android:choiceMode="none"
+		android:transcriptMode="alwaysScroll"
+		android:stackFromBottom="true"></ListView>
+	<LinearLayout
+		android:id="@+id/comments_input_layout"
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+		android:layout_weight="0"
+		android:orientation="horizontal"
+		android:background="@drawable/top_bar_background"
+		android:paddingTop="3dp">
+		<Button
+			android:id="@+id/add_smiley_button"
+			android:layout_width="wrap_content"
+			android:layout_height="fill_parent"
+			android:text="Smiley"></Button>
+		<EditText
+			android:id="@+id/comment_edit_text"
+			android:layout_width="fill_parent"
+			android:layout_height="fill_parent"
+			android:layout_weight="2">
+		</EditText>
+		<Button
+			android:id="@+id/post_comment_button"
+			android:layout_width="wrap_content"
+			android:layout_height="fill_parent"
+			android:text="Send"></Button>
+	</LinearLayout>
+</LinearLayout>
