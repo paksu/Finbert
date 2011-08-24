@@ -2,8 +2,8 @@ var logger = require('logging').from(__filename);
 var http = require('http');
 var dbconn = require('mongoskin').db('localhost:27017/finbert?auto_reconnect');
 var argv = require('optimist').argv;
-var util = require('util');
-var mac = "Wanha, eka, toka, HUUTO, kiroilu, v*ttuilu ja muup*rseily kielletty Seuraus: IP-esto";
+var Status = { "SUCCESS" : "SUCCESS", "FAILURE_INVALID_MESSAGE": "FAILURE_INVALID_MESSAGE", "FAILURE_OTHER": "FAILURE_OTHER" };
+var mac = "Wanha, eka, toka, HUUTO, kiroilu, v*ttuilu ja muu p*rseily kielletty Seuraus: IP-esto";
 var mode = argv.mode;
 
 http.createServer(function (req, res) {
@@ -23,8 +23,10 @@ http.createServer(function (req, res) {
   if(valid) {
       res.writeHead(200, {'Content-Type': 'text/plain'});
   } else {
-      res.writeHead(404, {'Content-Type': 'text/plain'});
-      res.write("404 Not Found\n");
+      res.writeHead(200, {'Content-Type': 'text/plain'});
+      var result = [{ "status" : Status.FAILURE_INVALID_MESSAGE }];
+      logger("RID [" + req.rid + "] :: ", result);
+      res.write(JSON.stringify(result));
       res.end();
       return;
   }
@@ -40,8 +42,9 @@ var handler = {
   '/comments/get': function comments_get (res, req) {
      var query = require('url').parse(req.url, true).query;
      logger("RID [" + req.rid + "] :: ", query);
-     dbconn.collection('comments').find({ date : query.date }).toArray(function comments_get_callback (err, items){
+     dbconn.collection('comments').find({ date : query.date }, { _id: 0, created_on: 0 }).sort( { created_on: -1 }).toArray(function comments_get_callback (err, items){
          logger("RID [" + req.rid + "] :: ", items);
+         items.unshift({ "status" : Status.SUCCESS });
          res.write(JSON.stringify(items));
          res.end();
      })
@@ -50,9 +53,20 @@ var handler = {
   '/comments/insert': function comments_insert (res, req) {
      var query = require('url').parse(req.url, true).query;
      logger("RID [" + req.rid + "] :: ", query);
-     dbconn.collection('comments').insert({ date : query.date, comment : query.comment }, function comments_insert_callback (){
-         var result = { success: true };
+     dbconn.collection('comments').insert({ date : query.date, name: query.name, comment : query.comment, created_on: new Date() }, function comments_insert_callback (){
+         var result = [{ "status" : Status.SUCCESS }];
          logger("RID [" + req.rid + "] :: ", result);
+         res.write(JSON.stringify(result));
+         res.end();
+     })
+  },
+  '/comments/count': function comments_count (res, req) {
+     var query = require('url').parse(req.url, true).query;
+     logger("RID [" + req.rid + "] :: ", query);
+     dbconn.collection('comments').count({ date : query.date }, function comments_count_callback (err, query_result) {
+         var result = [{ "status" : Status.SUCCESS }];
+         logger("RID [" + req.rid + "] :: ", result);
+         result.push({ count: query_result });
          res.write(JSON.stringify(result));
          res.end();
      })
@@ -62,7 +76,7 @@ var handler = {
      var query = require('url').parse(req.url, true);
      logger("RID [" + req.rid + "] :: ", query);
      dbconn.collection('ratings').insert({ date : query.date, rating : query.rating }, function ratings_set_callback(){
-         var result = { success: true };
+         var result = [{ "status" : Status.SUCCESS }];
          logger("RID [" + req.rid + "] :: ", result);
          res.write(JSON.stringify(result));
          res.end();
@@ -75,12 +89,12 @@ var handler = {
      dbconn.collection('ratings').find({ date : query.date }).toArray(function ratings_get_callback (err, items){
          logger("RID [" + req.rid + "] :: Calculating rating for", items);
          var sum = 0;
-         var isSuccess = false; 
+         var isSuccess = Status.FAILURE_OTHER; 
          items.forEach(function(item) {
             sum += item.rating;
-            isSuccess = true;
+            isSuccess = Status.SUCCESS;
          });
-         var result = { success : isSuccess,  rating: sum / items.length };
+         var result = { "status" : isSuccess,  rating: sum / items.length };
          logger("RID [" + req.rid + "] :: ", result);
          res.write(JSON.stringify(result));
          res.end();
