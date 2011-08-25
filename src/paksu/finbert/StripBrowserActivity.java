@@ -33,7 +33,12 @@ public final class StripBrowserActivity extends Activity implements ViewFactory 
 
 		@Override
 		protected Void doInBackground(Void... params) {
-			dilbertReader.readCurrent();
+			try {
+				dilbertReader.readCurrent();
+			} catch (NetworkException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			return null;
 		}
 
@@ -162,7 +167,13 @@ public final class StripBrowserActivity extends Activity implements ViewFactory 
 	}
 
 	private Drawable currentDilbertDrawable() {
-		return new BitmapDrawable(dilbertReader.readCurrent());
+		try {
+			return new BitmapDrawable(dilbertReader.readCurrent());
+		} catch (NetworkException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return new BitmapDrawable();
+		}
 	}
 
 	private Drawable temporaryDrawable() {
