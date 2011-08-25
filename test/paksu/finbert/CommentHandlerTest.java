@@ -16,6 +16,7 @@ public class CommentHandlerTest {
 		try {
 			response = ch.setComment(new Comment("testComment", "joona", "2011-08-20"));
 			System.out.println(response);
+			assertNotNull(response);
 		} catch (NetworkException e) {
 			assertNotNull(e);
 		}
@@ -29,6 +30,23 @@ public class CommentHandlerTest {
 		String response;
 		try {
 			response = ch.getComments("2011-08-20").toString();
+			System.out.println(response);
+			assertNotNull(response);
+		} catch (NetworkException e) {
+			assertNotNull(e);
+		} catch (JsonParseException e) {
+			assertNotNull(e);
+		}
+
+	}
+
+	@Test
+	public void testGetCommentCount() {
+		System.out.println("Testing getComments()");
+		CommentHandler ch = new CommentHandler();
+		String response;
+		try {
+			response = ch.getCommentCount("2011-08-20").toString();
 			System.out.println(response);
 			assertNotNull(response);
 		} catch (NetworkException e) {

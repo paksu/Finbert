@@ -1,6 +1,7 @@
 package paksu.finbert;
 
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -15,24 +16,32 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.params.BasicHttpParams;
+import org.apache.http.params.HttpConnectionParams;
+import org.apache.http.params.HttpParams;
 import org.apache.http.util.EntityUtils;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonArray;
 import com.google.gson.JsonParseException;
-import com.google.gson.JsonParser;
+import com.google.gson.reflect.TypeToken;
 
 public class CommentHandler {
 	private final String mac = "Wanha, eka, toka, HUUTO, kiroilu, v*ttuilu ja muu p*rseily kielletty Seuraus: IP-esto";
 	private final String serverUrl = "http://jamssi.net";
 	private final String serverPort = "4325";
 	private final Gson gson = new Gson();
+	private final HttpClient httpclient;
+	private final int socketTimeoutDelay = 5 * 1000; // 5 seconds
+	private final int connectionTimeoutDelay = 10 * 1000; // 10 second
 
 	public CommentHandler() {
+		HttpParams httpParameters = new BasicHttpParams();
+		HttpConnectionParams.setConnectionTimeout(httpParameters, connectionTimeoutDelay);
+		HttpConnectionParams.setSoTimeout(httpParameters, socketTimeoutDelay);
+		httpclient = new DefaultHttpClient(httpParameters);
 	}
 
 	public boolean setComment(Comment commentToAdd) throws NetworkException {
-		HttpClient httpclient = new DefaultHttpClient();
 		String commentsUrl = serverUrl + ":" + serverPort + "/comments/insert?";
 		List<NameValuePair> requestParameters = new ArrayList<NameValuePair>();
 
@@ -50,10 +59,7 @@ public class CommentHandler {
 		try {
 			HttpResponse response = httpclient.execute(request);
 			String responseBody = EntityUtils.toString(response.getEntity());
-			ParsedResult queryResult = getResponseStatus(responseBody);
-			if (queryResult.getStatus() == ParsedResult.Responsecode.SUCCESS) {
-				isSuccess = true;
-			}
+			isSuccess = gson.fromJson(responseBody, boolean.class);
 		} catch (ClientProtocolException e) {
 			e.printStackTrace();
 			throw new NetworkException(e);
@@ -63,10 +69,6 @@ public class CommentHandler {
 		}
 
 		return isSuccess;
-	}
-
-	private ParsedResult getResponseStatus(String resultJSON) {
-		return gson.fromJson(resultJSON, ParsedResult.class);
 	}
 
 	public List<Comment> getComments(String date) throws NetworkException, JsonParseException {
@@ -79,8 +81,35 @@ public class CommentHandler {
 		return commentList;
 	}
 
+	public Integer getCommentCount(String date) throws NetworkException, JsonParseException {
+		String commentsUrl = serverUrl + ":" + serverPort + "/comments/count?";
+		List<NameValuePair> requestParameters = new ArrayList<NameValuePair>();
+		Integer commentCount = new Integer(0);
+
+		requestParameters.add(new BasicNameValuePair("date", date));
+		requestParameters.add(new BasicNameValuePair("checksum", calculateChecksum(date)));
+
+		commentsUrl += URLEncodedUtils.format(requestParameters, "utf-8");
+
+		HttpGet request = new HttpGet(commentsUrl);
+		HttpResponse response;
+
+		try {
+			response = httpclient.execute(request);
+			String responseBody = EntityUtils.toString(response.getEntity());
+			commentCount = gson.fromJson(responseBody, Integer.class);
+		} catch (ClientProtocolException e) {
+			e.printStackTrace();
+			throw new NetworkException(e);
+		} catch (IOException e) {
+			e.printStackTrace();
+			throw new NetworkException(e);
+		}
+		return commentCount;
+
+	}
+
 	private String readCommentsFromServer(String date) throws NetworkException {
-		HttpClient httpclient = new DefaultHttpClient();
 		String commentsUrl = serverUrl + ":" + serverPort + "/comments/get?";
 		List<NameValuePair> requestParameters = new ArrayList<NameValuePair>();
 		requestParameters.add(new BasicNameValuePair("date", date));
@@ -103,26 +132,18 @@ public class CommentHandler {
 		}
 	}
 
-	private List<Comment> deserializeCommentsJSON(String commentJSON) throws JsonParseException {
+	private List<Comment> deserializeCommentsJSON(String commentJSON) throws NetworkException {
 		List<Comment> commentList = new ArrayList<Comment>();
-		JsonParser parser = new JsonParser();
-		JsonArray array = parser.parse(commentJSON).getAsJsonArray();
-		ParsedResult queryResult = getResponseStatus(array.get(0).toString());
-		if (queryResult.getStatus() == ParsedResult.Responsecode.SUCCESS) {
-			try {
-				for (int i = 1; i < array.size(); i++) {
-					Comment nextComment = gson.fromJson(array.get(i), Comment.class);
-					commentList.add(nextComment);
-				}
-			} catch (JsonParseException e) {
-				e.printStackTrace();
-				throw new JsonParseException(e);
-			}
-		} else {
-			// TODO: Serveri sanoo, että haku epäonnistui esim sen takia, että
-			// checksummi ei täsmää
-			// heitellään poikkeusta?
+
+		try {
+			Type collectionType = new TypeToken<List<Comment>>() {
+			}.getType();
+			commentList = gson.fromJson(commentJSON, collectionType);
+		} catch (JsonParseException e) {
+			e.printStackTrace();
+			throw new NetworkException(e);
 		}
+
 		return commentList;
 	}
 
