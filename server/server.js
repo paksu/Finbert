@@ -24,8 +24,8 @@ http.createServer(function (req, res) {
       res.writeHead(200, {'Content-Type': 'text/plain'});
   } else {
       res.writeHead(200, {'Content-Type': 'text/plain'});
-      var result = [{ "status" : Status.FAILURE_INVALID_MESSAGE }];
-      logger("RID [" + req.rid + "] :: ", result);
+      var result = [];
+      logger("RID [" + req.rid + "] :: ", Status.FAILURE_INVALID_MESSAGE );
       res.write(JSON.stringify(result));
       res.end();
       return;
@@ -44,9 +44,8 @@ var handler = {
      logger("RID [" + req.rid + "] :: ", query);
      dbconn.collection('comments').find({ date : query.date }, { _id: 0, created_on: 0 }).sort( { created_on: -1 }).toArray(function comments_get_callback (err, items){
          logger("RID [" + req.rid + "] :: ", items);
-         items.unshift({ "status" : Status.SUCCESS });
-         res.write(JSON.stringify(items));
-         res.end();
+	 res.write(JSON.stringify(items));
+	 res.end();
      })
   }, 
 
@@ -54,7 +53,7 @@ var handler = {
      var query = require('url').parse(req.url, true).query;
      logger("RID [" + req.rid + "] :: ", query);
      dbconn.collection('comments').insert({ date : query.date, name: query.name, comment : query.comment, created_on: new Date() }, function comments_insert_callback (){
-         var result = [{ "status" : Status.SUCCESS }];
+         var result = 'true';
          logger("RID [" + req.rid + "] :: ", result);
          res.write(JSON.stringify(result));
          res.end();
@@ -63,43 +62,12 @@ var handler = {
   '/comments/count': function comments_count (res, req) {
      var query = require('url').parse(req.url, true).query;
      logger("RID [" + req.rid + "] :: ", query);
-     dbconn.collection('comments').count({ date : query.date }, function comments_count_callback (err, query_result) {
-         var result = [{ "status" : Status.SUCCESS }];
-         logger("RID [" + req.rid + "] :: ", result);
-         result.push({ count: query_result });
-         res.write(JSON.stringify(result));
-         res.end();
-     })
-  },
- 
-  '/ratings/set': function ratings_set(res, req) {
-     var query = require('url').parse(req.url, true);
-     logger("RID [" + req.rid + "] :: ", query);
-     dbconn.collection('ratings').insert({ date : query.date, rating : query.rating }, function ratings_set_callback(){
-         var result = [{ "status" : Status.SUCCESS }];
+     dbconn.collection('comments').count({ date : query.date }, function comments_count_callback (err, result) {
          logger("RID [" + req.rid + "] :: ", result);
          res.write(JSON.stringify(result));
          res.end();
      })
   },
- 
-  '/ratings/get': function ratings_get (res, req) {
-     var query = require('url').parse(req.url, true).query;
-     logger("RID [" + req.rid + "] :: ", query);
-     dbconn.collection('ratings').find({ date : query.date }).toArray(function ratings_get_callback (err, items){
-         logger("RID [" + req.rid + "] :: Calculating rating for", items);
-         var sum = 0;
-         var isSuccess = Status.FAILURE_OTHER; 
-         items.forEach(function(item) {
-            sum += item.rating;
-            isSuccess = Status.SUCCESS;
-         });
-         var result = { "status" : isSuccess,  rating: sum / items.length };
-         logger("RID [" + req.rid + "] :: ", result);
-         res.write(JSON.stringify(result));
-         res.end();
-     })
-  } 
 }
 
 function messageIsValid (req) {
@@ -119,6 +87,7 @@ function messageIsValid (req) {
    } 
    return valid;
 }
+
 // between 1000 - 9999
 function getRequestID() {
    return Math.floor(Math.random() * 9000) + 1000;
