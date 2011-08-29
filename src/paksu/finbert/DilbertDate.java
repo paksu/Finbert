@@ -3,7 +3,6 @@ package paksu.finbert;
 import static org.joda.time.DateTimeConstants.SATURDAY;
 import static org.joda.time.DateTimeConstants.SUNDAY;
 
-import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
 
 public final class DilbertDate {
@@ -11,6 +10,18 @@ public final class DilbertDate {
 
 	private DilbertDate(LocalDate date) {
 		this.date = date;
+	}
+
+	public int getDay() {
+		return date.getDayOfMonth();
+	}
+
+	public int getMonth() {
+		return date.getMonthOfYear();
+	}
+
+	public int getYear() {
+		return date.getYear();
 	}
 
 	public DilbertDate next() {
@@ -49,11 +60,11 @@ public final class DilbertDate {
 		return new DilbertDate(newest);
 	}
 
-	public static DilbertDate exactlyForDate(DateTime dt) {
+	public static DilbertDate exactlyForDate(int year, int month, int day) {
 		throw new UnsupportedOperationException("not implemented");
 	}
 
-	public static DilbertDate nearestToDate(DateTime dt) {
+	public static DilbertDate nearestToDate(int year, int moth, int day) {
 		throw new UnsupportedOperationException("not implemented");
 	}
 
