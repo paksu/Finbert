@@ -10,8 +10,15 @@ import org.apache.http.NameValuePair;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.params.HttpClientParams;
 import org.apache.http.client.utils.URLEncodedUtils;
+import org.apache.http.conn.ClientConnectionManager;
+import org.apache.http.conn.scheme.PlainSocketFactory;
+import org.apache.http.conn.scheme.Scheme;
+import org.apache.http.conn.scheme.SchemeRegistry;
+import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpConnectionParams;
@@ -31,10 +38,24 @@ public class DilbertReader {
 	private final int httpRequestIsSuccessful = 200; // HTTP/1.1 200 OK
 
 	protected DilbertReader() {
+		HttpParams params = new BasicHttpParams();
+
+		HttpConnectionParams.setStaleCheckingEnabled(params, false);
+		HttpConnectionParams.setSocketBufferSize(params, 8192);
+		HttpConnectionParams.setConnectionTimeout(params, connectionTimeoutDelay);
+		HttpConnectionParams.setSoTimeout(params, socketTimeoutDelay);
+
+		HttpClientParams.setRedirecting(params, false);
+
+		SchemeRegistry schemeRegistry = new SchemeRegistry();
+		schemeRegistry.register(new Scheme("http", PlainSocketFactory.getSocketFactory(), 80));
+		schemeRegistry.register(new Scheme("https", SSLSocketFactory.getSocketFactory(), 443));
+		ClientConnectionManager manager = new ThreadSafeClientConnManager(params, schemeRegistry);
+
 		HttpParams httpParameters = new BasicHttpParams();
 		HttpConnectionParams.setConnectionTimeout(httpParameters, connectionTimeoutDelay);
 		HttpConnectionParams.setSoTimeout(httpParameters, socketTimeoutDelay);
-		httpclient = new DefaultHttpClient(httpParameters);
+		httpclient = new DefaultHttpClient(manager, httpParameters);
 		imageCache = ImageCache.getInstance();
 	}
 
@@ -50,7 +71,7 @@ public class DilbertReader {
 		return imageCache.get(date) != null;
 	}
 
-	public synchronized Bitmap downloadFinbertForDate(DilbertDate date) throws NetworkException {
+	public Bitmap downloadFinbertForDate(DilbertDate date) throws NetworkException {
 		Bitmap picture = null;
 		Log.d("finbert", "Downloading image for date:" + date.toString());
 
@@ -91,6 +112,7 @@ public class DilbertReader {
 			}
 
 		}
+		Log.d("finbert", "Downloaded");
 		return picture;
 	}
 
