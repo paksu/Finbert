@@ -8,8 +8,16 @@ import android.util.Log;
 
 public class ImageCache {
 	private final HashMap<String, SoftReference<Bitmap>> imageCache;
+	private static ImageCache instance = null;
 
-	public ImageCache() {
+	public static ImageCache getInstance() {
+		if (instance == null) {
+			instance = new ImageCache();
+		}
+		return instance;
+	}
+
+	protected ImageCache() {
 		imageCache = new HashMap<String, SoftReference<Bitmap>>();
 	}
 
@@ -44,5 +52,10 @@ public class ImageCache {
 			}
 		}
 		return cached;
+	}
+
+	public Object get(DilbertDate date) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }
