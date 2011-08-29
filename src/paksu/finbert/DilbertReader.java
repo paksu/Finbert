@@ -3,7 +3,6 @@ package paksu.finbert;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import org.apache.http.HttpResponse;
@@ -17,7 +16,6 @@ import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
-import org.joda.time.DateTime;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -25,11 +23,7 @@ import android.util.Log;
 
 public class DilbertReader {
 	private final String defaultDilbertURL = "http://www.taloussanomat.fi/dilbert/dilbert.php?";
-	private DateTime dt = new DateTime();
-	private boolean nextAvailable = false;
-	private boolean previousAvailable = false;
 	private static DilbertReader instance = null;
-	private final HashMap<String, Boolean> availabilityCache;
 	private final ImageCache imageCache;
 	private final HttpClient httpclient;
 	private final int socketTimeoutDelay = 5 * 1000; // 5 seconds
@@ -41,8 +35,7 @@ public class DilbertReader {
 		HttpConnectionParams.setConnectionTimeout(httpParameters, connectionTimeoutDelay);
 		HttpConnectionParams.setSoTimeout(httpParameters, socketTimeoutDelay);
 		httpclient = new DefaultHttpClient(httpParameters);
-		availabilityCache = new HashMap<String, Boolean>();
-		imageCache = new ImageCache();
+		imageCache = ImageCache.getInstance();
 	}
 
 	public static DilbertReader getInstance() {
@@ -53,183 +46,79 @@ public class DilbertReader {
 		return instance;
 	}
 
-	public boolean hasCurrentCached() {
-		return imageCache.get(getCurrentDate()) != null;
+	public boolean isCachedForDate(DilbertDate date) {
+		return imageCache.get(date) != null;
 	}
 
-	public synchronized Bitmap readCurrent() throws NetworkException {
+	public synchronized Bitmap downloadFinbertForDate(DilbertDate date) throws NetworkException {
 		Bitmap picture = null;
-		String date = getCurrentDate();
+		Log.d("finbert", "Downloading image for date:" + date.toString());
 
-		if (imageCache.imageIsCachedFor(date)) {
-			picture = imageCache.get(date);
-		} else {
-			Log.d("finbert", "Downloading image for date:" + date);
+		String dilbertURL = defaultDilbertURL;
+		String dateString = date.getYear() + "-" + date.getMonth() + "-" + date.getDay();
+		Log.d("finbert", dateString);
 
-			String dilbertURL = defaultDilbertURL;
+		List<NameValuePair> requestParameters = new ArrayList<NameValuePair>();
+		requestParameters.add(new BasicNameValuePair("date", dateString));
 
-			List<NameValuePair> requestParameters = new ArrayList<NameValuePair>();
-			requestParameters.add(new BasicNameValuePair("date", date));
+		dilbertURL += URLEncodedUtils.format(requestParameters, "utf-8");
 
-			dilbertURL += URLEncodedUtils.format(requestParameters, "utf-8");
-
-			HttpGet request = new HttpGet(dilbertURL);
-			HttpResponse response;
-			InputStream is = null;
+		HttpGet request = new HttpGet(dilbertURL);
+		HttpResponse response;
+		InputStream is = null;
+		try {
+			response = httpclient.execute(request);
+			if (response.getStatusLine().getStatusCode() == httpRequestIsSuccessful) {
+				is = response.getEntity().getContent();
+				picture = BitmapFactory.decodeStream(is);
+				is.close();
+				imageCache.set(date, picture);
+			} else {
+				throw new NetworkException("Download failed: " + response.getStatusLine().getReasonPhrase());
+			}
+		} catch (ClientProtocolException e) {
+			e.printStackTrace();
+			throw new NetworkException(e);
+		} catch (IOException e) {
+			e.printStackTrace();
+			throw new NetworkException(e);
+		} finally {
 			try {
-				response = httpclient.execute(request);
-				if (response.getStatusLine().getStatusCode() == httpRequestIsSuccessful) {
-					is = response.getEntity().getContent();
-					picture = BitmapFactory.decodeStream(is);
-					is.close();
-					imageCache.set(date, picture);
-					availabilityCache.put(date, true);
-				} else {
-					throw new NetworkException("Download failed with reason: "
-							+ response.getStatusLine().getReasonPhrase());
-				}
-			} catch (ClientProtocolException e) {
-				e.printStackTrace();
-				throw new NetworkException(e);
+				Log.d("finbert", "closingz");
+				is.close();
 			} catch (IOException e) {
 				e.printStackTrace();
-				throw new NetworkException(e);
-			} finally {
-				try {
-					Log.d("finbert", "closingz");
-					is.close();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-
 			}
 
-			imageCache.set(date, picture);
-			availabilityCache.put(date, true);
 		}
-
-		checkAvailability();
-
 		return picture;
 	}
 
-	private void checkAvailability() throws NetworkException {
-		Log.d("finbert", "Checking availability");
-		if (isDilbertAvailable(peekNextDate())) {
-			Log.d("finbert", "Next day is available");
-			setNextAvailable(true);
-		} else {
-			Log.d("finbert", "Next day is not available");
-			setNextAvailable(false);
-		}
+	public boolean isDilbertAvailableForDate(DilbertDate date) {
 
-		if (isDilbertAvailable(peekPreviousDate())) {
-			Log.d("finbert", "Previous day is available");
-			setPreviousAvailable(true);
-		} else {
-			Log.d("finbert", "Previous day is not available");
-			setPreviousAvailable(false);
-		}
+		boolean isAvailable = false;
 
-	}
+		String dilbertURL = defaultDilbertURL;
+		String dateString = date.getYear() + "-" + date.getMonth() + "-" + date.getDay();
 
-	public void previousDay() {
-		dt = dt.minusDays(1);
-	}
+		List<NameValuePair> requestParameters = new ArrayList<NameValuePair>();
+		requestParameters.add(new BasicNameValuePair("date", dateString));
 
-	public void nextDay() {
-		dt = dt.plusDays(1);
-		if (dt.getDayOfWeek() > 5) {
-			while (dt.getDayOfWeek() != 1) {
-				dt = dt.plusDays(1);
+		dilbertURL += URLEncodedUtils.format(requestParameters, "utf-8");
+
+		HttpGet request = new HttpGet(dilbertURL);
+		HttpResponse response;
+
+		try {
+			response = httpclient.execute(request);
+			if (response.getStatusLine().getStatusCode() == httpRequestIsSuccessful) {
+				isAvailable = true;
 			}
+		} catch (ClientProtocolException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
-	}
-
-	public String getCurrentDate() {
-		while (dt.getDayOfWeek() > 5) {
-			dt = dt.minusDays(1);
-		}
-		Log.d("finbert",
-				"Current date:" + Integer.toString(dt.getYear()) + "-"
-						+ Integer.toString(dt.getMonthOfYear()) + "-"
-						+ Integer.toString(dt.getDayOfMonth()));
-		return Integer.toString(dt.getYear()) + "-"
-				+ Integer.toString(dt.getMonthOfYear()) + "-"
-				+ Integer.toString(dt.getDayOfMonth());
-	}
-
-	private String peekNextDate() {
-		DateTime nextDay = dt;
-		nextDay = nextDay.plusDays(1);
-		if (nextDay.getDayOfWeek() > 5) {
-			while (nextDay.getDayOfWeek() != 1) {
-				nextDay = nextDay.plusDays(1);
-			}
-		}
-		return Integer.toString(nextDay.getYear()) + "-"
-				+ Integer.toString(nextDay.getMonthOfYear()) + "-"
-				+ Integer.toString(nextDay.getDayOfMonth());
-	}
-
-	private String peekPreviousDate() {
-		DateTime previousDay = dt;
-		previousDay = previousDay.minusDays(1);
-		while (previousDay.getDayOfWeek() > 5) {
-			previousDay = previousDay.minusDays(1);
-		}
-		return Integer.toString(previousDay.getYear()) + "-"
-				+ Integer.toString(previousDay.getMonthOfYear()) + "-"
-				+ Integer.toString(previousDay.getDayOfMonth());
-	}
-
-	private synchronized boolean isDilbertAvailable(String dateString) throws NetworkException {
-		boolean dilbertIsAvailable = false;
-
-		if (availabilityCache.containsKey(dateString)) {
-			dilbertIsAvailable = availabilityCache.get(dateString);
-			Log.d("finbert", "isDilbertAvailable found cached value for date:"
-					+ dateString);
-		} else {
-			Log.d("finbert", "isDilbertAvailable polling date:" + dateString);
-
-			String dilbertURL = defaultDilbertURL;
-			List<NameValuePair> requestParameters = new ArrayList<NameValuePair>();
-
-			requestParameters.add(new BasicNameValuePair("date", dateString));
-			dilbertURL += URLEncodedUtils.format(requestParameters, "utf-8");
-
-			HttpGet request = new HttpGet(dilbertURL);
-
-			try {
-				HttpResponse response = httpclient.execute(request);
-				if (response.getStatusLine().getStatusCode() == httpRequestIsSuccessful) {
-					dilbertIsAvailable = true;
-				}
-			} catch (ClientProtocolException e) {
-				e.printStackTrace();
-				throw new NetworkException(e);
-			} catch (IOException e) {
-				e.printStackTrace();
-				throw new NetworkException(e);
-			}
-		}
-		return dilbertIsAvailable;
-	}
-
-	public boolean isNextAvailable() {
-		return nextAvailable;
-	}
-
-	public void setNextAvailable(boolean isNextAvailable) {
-		nextAvailable = isNextAvailable;
-	}
-
-	public boolean isPreviousAvailable() {
-		return previousAvailable;
-	}
-
-	public void setPreviousAvailable(boolean isPreviousAvailable) {
-		previousAvailable = isPreviousAvailable;
+		return isAvailable;
 	}
 }
