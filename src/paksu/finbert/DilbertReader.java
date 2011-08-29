@@ -46,17 +46,12 @@ public class DilbertReader {
 		return instance;
 	}
 
-	public boolean isCachedForDate(DilbertDate date) {
-		return imageCache.get(date) != null;
-	}
-
 	public synchronized Bitmap downloadFinbertForDate(DilbertDate date) throws NetworkException {
 		Bitmap picture = null;
 		Log.d("finbert", "Downloading image for date:" + date.toString());
 
 		String dilbertURL = defaultDilbertURL;
 		String dateString = date.getYear() + "-" + date.getMonth() + "-" + date.getDay();
-		Log.d("finbert", dateString);
 
 		List<NameValuePair> requestParameters = new ArrayList<NameValuePair>();
 		requestParameters.add(new BasicNameValuePair("date", dateString));

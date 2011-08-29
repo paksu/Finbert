@@ -68,7 +68,8 @@ public final class StripBrowserActivity extends Activity implements ViewFactory 
 		@Override
 		protected Void doInBackground(Void... params) {
 			try {
-				fetchedCommentCount = commentHandler.getCommentCount("2011-08-22");
+				fetchedCommentCount = commentHandler.getCommentCount(dilbertDate.getYear() + "-"
+						+ dilbertDate.getMonth() + "-" + dilbertDate.getDay());
 			} catch (JsonParseException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -182,7 +183,7 @@ public final class StripBrowserActivity extends Activity implements ViewFactory 
 	}
 
 	private void fetchNewFinbert() {
-		if (imagecache.imageIsCachedFor(dilbertDate)) {
+		if (imagecache.isImageCachedForDate(dilbertDate)) {
 			updateTitle();
 			slideToCurrent();
 			updateNavigationButtonStates();
