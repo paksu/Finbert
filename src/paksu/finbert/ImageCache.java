@@ -30,7 +30,7 @@ public class ImageCache {
 		imageCache.remove(date);
 	}
 
-	public boolean imageIsCachedFor(String date) {
+	public boolean isImageCachedForDate(DilbertDate date) {
 		boolean cached = false;
 		if (imageCache.containsKey(date)) {
 			Log.d("finbert", "Checing if image is cached for date:" + date);
