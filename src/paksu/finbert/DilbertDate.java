@@ -58,6 +58,10 @@ public final class DilbertDate {
 		return LocalDate.now().minusYears(1).isAfter(date);
 	}
 
+	public String toUriString() {
+		return String.format("%d-%d-%d", date.getYear(), date.getMonthOfYear(), date.getDayOfWeek());
+	}
+
 	@Override
 	public String toString() {
 		/* TODO better formatting */

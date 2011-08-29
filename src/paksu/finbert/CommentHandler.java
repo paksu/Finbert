@@ -21,6 +21,8 @@ import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
 import org.apache.http.util.EntityUtils;
 
+import android.util.Log;
+
 import com.google.gson.Gson;
 import com.google.gson.JsonParseException;
 import com.google.gson.reflect.TypeToken;
@@ -71,23 +73,24 @@ public class CommentHandler {
 		return isSuccess;
 	}
 
-	public List<Comment> getComments(String date) throws NetworkException, JsonParseException {
+	public List<Comment> getComments(DilbertDate date) throws NetworkException, JsonParseException {
 		List<Comment> commentList = new ArrayList<Comment>();
 		String commentsJSON;
 
-		commentsJSON = readCommentsFromServer(date.toString());
+		commentsJSON = readCommentsFromServer(date);
 		commentList = deserializeCommentsJSON(commentsJSON);
 
 		return commentList;
 	}
 
-	public Integer getCommentCount(String date) throws NetworkException, JsonParseException {
+	public Integer getCommentCount(DilbertDate date) throws NetworkException, JsonParseException {
+		Log.d("finbert", "date " + date);
 		String commentsUrl = serverUrl + ":" + serverPort + "/comments/count?";
 		List<NameValuePair> requestParameters = new ArrayList<NameValuePair>();
 		Integer commentCount = new Integer(0);
 
-		requestParameters.add(new BasicNameValuePair("date", date));
-		requestParameters.add(new BasicNameValuePair("checksum", calculateChecksum(date)));
+		requestParameters.add(new BasicNameValuePair("date", date.toUriString()));
+		requestParameters.add(new BasicNameValuePair("checksum", calculateChecksum(date.toUriString())));
 
 		commentsUrl += URLEncodedUtils.format(requestParameters, "utf-8");
 
@@ -109,11 +112,11 @@ public class CommentHandler {
 
 	}
 
-	private String readCommentsFromServer(String date) throws NetworkException {
+	private String readCommentsFromServer(DilbertDate date) throws NetworkException {
 		String commentsUrl = serverUrl + ":" + serverPort + "/comments/get?";
 		List<NameValuePair> requestParameters = new ArrayList<NameValuePair>();
-		requestParameters.add(new BasicNameValuePair("date", date));
-		requestParameters.add(new BasicNameValuePair("checksum", calculateChecksum(date)));
+		requestParameters.add(new BasicNameValuePair("date", date.toUriString()));
+		requestParameters.add(new BasicNameValuePair("checksum", calculateChecksum(date.toUriString())));
 
 		commentsUrl += URLEncodedUtils.format(requestParameters, "utf-8");
 
@@ -162,5 +165,4 @@ public class CommentHandler {
 		}
 		return "";
 	}
-
 }

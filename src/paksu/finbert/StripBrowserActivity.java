@@ -68,8 +68,7 @@ public final class StripBrowserActivity extends Activity implements ViewFactory 
 		@Override
 		protected Void doInBackground(Void... params) {
 			try {
-				fetchedCommentCount = commentHandler.getCommentCount(dilbertDate.getYear() + "-"
-						+ dilbertDate.getMonth() + "-" + dilbertDate.getDay());
+				fetchedCommentCount = commentHandler.getCommentCount(dilbertDate);
 			} catch (JsonParseException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
