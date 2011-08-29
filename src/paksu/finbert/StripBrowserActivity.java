@@ -1,9 +1,14 @@
 package paksu.finbert;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
+
 import paksu.finbert.DilbertImageSwitcher.Direction;
 import paksu.finbert.DilbertImageSwitcher.OnFlingListener;
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.graphics.Typeface;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -24,24 +29,53 @@ public final class StripBrowserActivity extends Activity implements ViewFactory 
 	private ImageView nextButton;
 	private ImageView prevButton;
 	private TextView commentCount;
-	private final DilbertReader dilbertReader;
-	private Direction nextSlideDirection;
-	private boolean isFetchingImage = false;
-	private boolean isFetchingCommentCount = false;
+
+	private final DilbertReader dilbertReader = DilbertReader.getInstance();
 	private final CommentHandler commentHandler = new CommentHandler();
-	private DilbertDate dilbertDate = DilbertDate.newest();
 	private final ImageCache imagecache = ImageCache.getInstance();
 
-	private class BackgroundDownloader extends AsyncTask<Void, Void, Void> {
+	private final Map<DilbertDate, Boolean> availabilityCache = new HashMap<DilbertDate, Boolean>();
+	private DilbertDate selectedDate = DilbertDate.newest();
+
+	private boolean checkAvailabilityTaskRunning = false;
+
+	private class CheckAvailabilityTask extends AsyncTask<DilbertDate, Void, Void> {
 		@Override
 		protected void onPreExecute() {
-			isFetchingImage = true;
+			checkAvailabilityTaskRunning = true;
 		}
 
 		@Override
-		protected Void doInBackground(Void... params) {
+		protected Void doInBackground(DilbertDate... params) {
+			for (DilbertDate date : params) {
+				Boolean dilbertIsAvailable = dilbertReader.isDilbertAvailableForDate(date);
+				availabilityCache.put(date, dilbertIsAvailable);
+			}
+			return null;
+		}
+
+		@Override
+		protected void onPostExecute(Void result) {
+			for (Entry<DilbertDate, Boolean> entry : availabilityCache.entrySet()) {
+				if (selectedDate.next().equals(entry.getKey())) {
+					nextButton.setEnabled(entry.getValue());
+				} else if (selectedDate.previous().equals(entry.getKey())) {
+					prevButton.setEnabled(entry.getValue());
+				}
+			}
+
+			checkAvailabilityTaskRunning = false;
+		}
+	}
+
+	private class DownloadFinbertTask extends AsyncTask<DilbertDate, Void, Bitmap> {
+		private DilbertDate date;
+
+		@Override
+		protected Bitmap doInBackground(DilbertDate... params) {
 			try {
-				dilbertReader.downloadFinbertForDate(dilbertDate);
+				date = params[0];
+				return dilbertReader.downloadFinbertForDate(date);
 			} catch (NetworkException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -50,25 +84,21 @@ public final class StripBrowserActivity extends Activity implements ViewFactory 
 		}
 
 		@Override
-		protected void onPostExecute(Void result) {
-			isFetchingImage = false;
-			updateNavigationButtonStates();
-			fadeToCurrent();
+		protected void onPostExecute(Bitmap result) {
+			if (selectedDate.equals(date)) {
+				fadeToImage(result);
+			}
 		}
 	}
 
-	private class getCommentCountInBackground extends AsyncTask<Void, Void, Void> {
-		private Integer fetchedCommentCount = new Integer(0);
+	private class GetCommentCountTask extends AsyncTask<DilbertDate, Void, Integer> {
+		private DilbertDate date;
 
 		@Override
-		protected void onPreExecute() {
-			isFetchingCommentCount = true;
-		}
-
-		@Override
-		protected Void doInBackground(Void... params) {
+		protected Integer doInBackground(DilbertDate... params) {
+			date = params[0];
 			try {
-				fetchedCommentCount = commentHandler.getCommentCount(dilbertDate);
+				return commentHandler.getCommentCount(date);
 			} catch (JsonParseException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -80,28 +110,23 @@ public final class StripBrowserActivity extends Activity implements ViewFactory 
 		}
 
 		@Override
-		protected void onPostExecute(Void result) {
-			isFetchingCommentCount = false;
-			commentCount.setText(fetchedCommentCount.toString());
+		protected void onPostExecute(Integer result) {
+			if (date.equals(selectedDate)) {
+				commentCount.setText(result.toString());
+			}
 		}
 	}
 
 	private final OnFlingListener imageSwitcherOnFlingListener = new OnFlingListener() {
 		@Override
 		public void onFling(Direction direction) {
-			if (!isFetchingImage) {
-				if (direction == Direction.LEFT) {
-					changeToNextDayIfAvailable();
-				} else if (direction == Direction.RIGHT) {
-					changeToPreviousDayIfAvailable();
-				}
+			if (direction == Direction.LEFT) {
+				changeToNextDay();
+			} else if (direction == Direction.RIGHT) {
+				changeToPreviousDay();
 			}
 		}
 	};
-
-	public StripBrowserActivity() {
-		dilbertReader = DilbertReader.getInstance();
-	}
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -119,7 +144,7 @@ public final class StripBrowserActivity extends Activity implements ViewFactory 
 
 		setFonts();
 		fadeToTemporary();
-		downloadAndFadeToCurrent();
+		downloadAndFadeTo(selectedDate);
 		fetchCommentCount();
 	}
 
@@ -137,84 +162,66 @@ public final class StripBrowserActivity extends Activity implements ViewFactory 
 			return;
 		}
 
-		if (isFetchingImage) {
+		if (checkAvailabilityTaskRunning) {
 			return;
 		}
 
 		if (v.getId() == R.id.next) {
-			changeToNextDayIfAvailable();
+			changeToNextDay();
 		} else if (v.getId() == R.id.previous) {
-			changeToPreviousDayIfAvailable();
-		}
-	}
-
-	private void changeToNextDayIfAvailable() {
-		if (dilbertReader.isDilbertAvailableForDate(dilbertDate.next())) {
-			dilbertDate = dilbertDate.next();
-			nextSlideDirection = Direction.RIGHT;
-			fetchNewFinbert();
-			fetchCommentCount();
+			changeToPreviousDay();
 		}
 	}
 
 	private void fetchCommentCount() {
-		new getCommentCountInBackground().execute();
+		new GetCommentCountTask().execute(selectedDate);
 	}
 
-	private void changeToPreviousDayIfAvailable() {
-		if (dilbertReader.isDilbertAvailableForDate(dilbertDate.previous())) {
-			dilbertDate = dilbertDate.previous();
-			nextSlideDirection = Direction.LEFT;
-			fetchNewFinbert();
-			fetchCommentCount();
-		}
+	private void changeToNextDay() {
+		selectedDate = selectedDate.next();
+		fetchFinbert(selectedDate, Direction.RIGHT);
+		fetchCommentCount();
 	}
 
-	private void updateNavigationButtonStates() {
-		// TODO: jotai j‰rkev‰mp‰‰ ?
-		nextButton.setEnabled(dilbertReader.isDilbertAvailableForDate(dilbertDate.next()));
-		prevButton.setEnabled(dilbertReader.isDilbertAvailableForDate(dilbertDate.previous()));
+	private void changeToPreviousDay() {
+		selectedDate = selectedDate.previous();
+		fetchFinbert(selectedDate, Direction.LEFT);
+		fetchCommentCount();
 	}
 
 	private void updateTitle() {
 		// TODO: jotai j‰rkev‰mp‰‰ ?
-		setTitle("Finbert - " + dilbertDate.getYear() + "-" + dilbertDate.getMonth() + "-" + dilbertDate.getDay());
+		setTitle("Finbert - " + selectedDate.getYear() + "-" + selectedDate.getMonth() + "-" + selectedDate.getDay());
 	}
 
-	private void fetchNewFinbert() {
-		if (imagecache.isImageCachedForDate(dilbertDate)) {
-			updateTitle();
-			slideToCurrent();
-			updateNavigationButtonStates();
+	private void fetchFinbert(DilbertDate date, Direction direction) {
+		updateTitle();
+		if (imagecache.isImageCachedForDate(selectedDate)) {
+			slideToImage(imagecache.get(date), direction);
 		} else {
-			updateTitle();
-			slideToTemporary();
-			downloadAndFadeToCurrent();
+			slideToTemporary(direction);
+			downloadAndFadeTo(date);
 		}
 	}
 
-	private void downloadAndFadeToCurrent() {
-		new BackgroundDownloader().execute();
+	private void downloadAndFadeTo(DilbertDate date) {
+		new DownloadFinbertTask().execute(date);
 	}
 
-	private void slideToCurrent() {
-		imageSwitcher.slideToDrawable(currentDilbertDrawable(), ScaleType.FIT_CENTER, nextSlideDirection);
+	private void slideToImage(Bitmap bitmap, Direction direction) {
+		imageSwitcher.slideToDrawable(new BitmapDrawable(bitmap), ScaleType.FIT_CENTER, direction);
 	}
 
-	private void fadeToCurrent() {
-		imageSwitcher.fadeToDrawable(currentDilbertDrawable(), ScaleType.FIT_CENTER);
+	private void fadeToImage(Bitmap bitmap) {
+		imageSwitcher.fadeToDrawable(new BitmapDrawable(bitmap), ScaleType.FIT_CENTER);
 	}
 
 	private void fadeToTemporary() {
 		imageSwitcher.fadeToDrawable(temporaryDrawable(), ScaleType.CENTER_INSIDE);
 	}
 
-	private void slideToTemporary() {
-		imageSwitcher.slideToDrawable(temporaryDrawable(), ScaleType.CENTER_INSIDE, nextSlideDirection);
-	}
-
-	private Drawable currentDilbertDrawable() {
-		return new BitmapDrawable(imagecache.get(dilbertDate));
+	private void slideToTemporary(Direction direction) {
+		imageSwitcher.slideToDrawable(temporaryDrawable(), ScaleType.CENTER_INSIDE, direction);
 	}
 
 	private Drawable temporaryDrawable() {
@@ -223,9 +230,9 @@ public final class StripBrowserActivity extends Activity implements ViewFactory 
 
 	private void launchCommentsActivityForCurrentDate() {
 		Intent intent = new Intent(this, CommentsActivity.class);
-		intent.putExtra(CommentsActivity.EXTRAS_YEAR, dilbertDate.getYear());
-		intent.putExtra(CommentsActivity.EXTRAS_MONTH, dilbertDate.getMonth());
-		intent.putExtra(CommentsActivity.EXTRAS_DAY, dilbertDate.getDay());
+		intent.putExtra(CommentsActivity.EXTRAS_YEAR, selectedDate.getYear());
+		intent.putExtra(CommentsActivity.EXTRAS_MONTH, selectedDate.getMonth());
+		intent.putExtra(CommentsActivity.EXTRAS_DAY, selectedDate.getDay());
 		startActivity(intent);
 	}
 
