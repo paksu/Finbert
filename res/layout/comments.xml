@@ -23,7 +23,7 @@
 		android:layout_height="wrap_content"
 		android:layout_weight="0"
 		android:orientation="horizontal"
-		android:background="@drawable/top_bar_background"
+		android:background="@drawable/bar"
 		android:paddingTop="3dp">
 		<Button
 			android:id="@+id/add_smiley_button"

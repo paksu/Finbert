@@ -75,11 +75,11 @@ public class DilbertReader {
 
 			HttpGet request = new HttpGet(dilbertURL);
 			HttpResponse response;
+			InputStream is = null;
 			try {
 				response = httpclient.execute(request);
-
 				if (response.getStatusLine().getStatusCode() == httpRequestIsSuccessful) {
-					InputStream is = response.getEntity().getContent();
+					is = response.getEntity().getContent();
 					picture = BitmapFactory.decodeStream(is);
 					is.close();
 					imageCache.set(date, picture);
@@ -94,7 +94,18 @@ public class DilbertReader {
 			} catch (IOException e) {
 				e.printStackTrace();
 				throw new NetworkException(e);
+			} finally {
+				try {
+					Log.d("finbert", "closingz");
+					is.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+
 			}
+
+			imageCache.set(date, picture);
+			availabilityCache.put(date, true);
 		}
 
 		checkAvailability();

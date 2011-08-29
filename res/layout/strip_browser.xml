@@ -12,7 +12,7 @@
 		android:paddingBottom="3dp"
 		android:paddingRight="10dp"
 		android:paddingLeft="10dp"
-		android:background="@drawable/top_bar_background"
+		android:background="@drawable/bar"
 		android:layoutAnimation="@anim/fade_in_layout">
 		<ImageView
 			android:layout_height="fill_parent"
@@ -63,7 +63,7 @@
 		android:gravity="bottom"
 		android:layout_height="60dp"
 		android:padding="3dp"
-		android:background="@drawable/top_bar_background"
+		android:background="@drawable/bar"
 		android:layoutAnimation="@anim/fade_in_layout">
 		<ImageView
 			android:id="@+id/previous"
