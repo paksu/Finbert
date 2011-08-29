@@ -71,7 +71,6 @@ public class DilbertReader {
 			if (response.getStatusLine().getStatusCode() == httpRequestIsSuccessful) {
 				is = response.getEntity().getContent();
 				picture = BitmapFactory.decodeStream(is);
-				is.close();
 				imageCache.set(date, picture);
 			} else {
 				throw new NetworkException("Download failed: " + response.getStatusLine().getReasonPhrase());
@@ -84,8 +83,9 @@ public class DilbertReader {
 			throw new NetworkException(e);
 		} finally {
 			try {
-				Log.d("finbert", "closingz");
-				is.close();
+				if (is != null) {
+					is.close();
+				}
 			} catch (IOException e) {
 				e.printStackTrace();
 			}

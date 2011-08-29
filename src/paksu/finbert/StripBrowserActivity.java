@@ -48,8 +48,10 @@ public final class StripBrowserActivity extends Activity implements ViewFactory 
 		@Override
 		protected Void doInBackground(DilbertDate... params) {
 			for (DilbertDate date : params) {
-				Boolean dilbertIsAvailable = dilbertReader.isDilbertAvailableForDate(date);
-				availabilityCache.put(date, dilbertIsAvailable);
+				if (!availabilityCache.containsKey(date)) {
+					Boolean dilbertIsAvailable = dilbertReader.isDilbertAvailableForDate(date);
+					availabilityCache.put(date, dilbertIsAvailable);
+				}
 			}
 			return null;
 		}
@@ -146,6 +148,7 @@ public final class StripBrowserActivity extends Activity implements ViewFactory 
 		fadeToTemporary();
 		downloadAndFadeTo(selectedDate);
 		fetchCommentCount();
+		checkAvailabilityForDates(selectedDate.previous(), selectedDate.next());
 	}
 
 	private void setFonts() {
@@ -181,12 +184,18 @@ public final class StripBrowserActivity extends Activity implements ViewFactory 
 		selectedDate = selectedDate.next();
 		fetchFinbert(selectedDate, Direction.RIGHT);
 		fetchCommentCount();
+		checkAvailabilityForDates(selectedDate.next());
 	}
 
 	private void changeToPreviousDay() {
 		selectedDate = selectedDate.previous();
 		fetchFinbert(selectedDate, Direction.LEFT);
 		fetchCommentCount();
+		checkAvailabilityForDates(selectedDate.previous());
+	}
+
+	private void checkAvailabilityForDates(DilbertDate... dates) {
+		new CheckAvailabilityTask().execute(dates);
 	}
 
 	private void updateTitle() {
