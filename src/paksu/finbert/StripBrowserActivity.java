@@ -17,13 +17,18 @@ import android.widget.ImageView.ScaleType;
 import android.widget.TextView;
 import android.widget.ViewSwitcher.ViewFactory;
 
+import com.google.gson.JsonParseException;
+
 public final class StripBrowserActivity extends Activity implements ViewFactory {
 	private DilbertImageSwitcher imageSwitcher;
 	private ImageView nextButton;
 	private ImageView prevButton;
+	private TextView commentCount;
 	private final DilbertReader dilbertReader;
 	private Direction nextSlideDirection;
 	private boolean isFetchingImage = false;
+	private boolean isFetchingCommentCount = false;
+	private final CommentHandler commentHandler = new CommentHandler();
 
 	private class BackgroundDownloader extends AsyncTask<Void, Void, Void> {
 		@Override
@@ -47,6 +52,35 @@ public final class StripBrowserActivity extends Activity implements ViewFactory 
 			isFetchingImage = false;
 			updateNavigationButtonStates();
 			fadeToCurrent();
+		}
+	}
+
+	private class getCommentCountInBackground extends AsyncTask<Void, Void, Void> {
+		private Integer fetchedCommentCount = new Integer(0);
+
+		@Override
+		protected void onPreExecute() {
+			isFetchingCommentCount = true;
+		}
+
+		@Override
+		protected Void doInBackground(Void... params) {
+			try {
+				fetchedCommentCount = commentHandler.getCommentCount(dilbertReader.getCurrentDate());
+			} catch (JsonParseException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (NetworkException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			return null;
+		}
+
+		@Override
+		protected void onPostExecute(Void result) {
+			isFetchingCommentCount = false;
+			commentCount.setText(fetchedCommentCount.toString());
 		}
 	}
 
@@ -79,9 +113,12 @@ public final class StripBrowserActivity extends Activity implements ViewFactory 
 		nextButton = (ImageView) findViewById(R.id.next);
 		prevButton = (ImageView) findViewById(R.id.previous);
 
+		commentCount = (TextView) findViewById(R.id.comments_count);
+
 		setFonts();
 		fadeToTemporary();
 		downloadAndFadeToCurrent();
+		fetchCommentCount();
 	}
 
 	private void setFonts() {
@@ -114,7 +151,12 @@ public final class StripBrowserActivity extends Activity implements ViewFactory 
 			dilbertReader.nextDay();
 			nextSlideDirection = Direction.RIGHT;
 			fetchNewFinbert();
+			fetchCommentCount();
 		}
+	}
+
+	private void fetchCommentCount() {
+		new getCommentCountInBackground().execute();
 	}
 
 	private void changeToPreviousDayIfAvailable() {
@@ -122,6 +164,7 @@ public final class StripBrowserActivity extends Activity implements ViewFactory 
 			dilbertReader.previousDay();
 			nextSlideDirection = Direction.LEFT;
 			fetchNewFinbert();
+			fetchCommentCount();
 		}
 	}
 

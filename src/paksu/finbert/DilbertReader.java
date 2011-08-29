@@ -1,6 +1,5 @@
 package paksu.finbert;
 
-import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -24,7 +23,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.util.Log;
 
-public final class DilbertReader {
+public class DilbertReader {
 	private final String defaultDilbertURL = "http://www.taloussanomat.fi/dilbert/dilbert.php?";
 	private DateTime dt = new DateTime();
 	private boolean nextAvailable = false;
@@ -58,7 +57,7 @@ public final class DilbertReader {
 		return imageCache.get(getCurrentDate()) != null;
 	}
 
-	public Bitmap readCurrent() throws NetworkException {
+	public synchronized Bitmap readCurrent() throws NetworkException {
 		Bitmap picture = null;
 		String date = getCurrentDate();
 
@@ -78,13 +77,17 @@ public final class DilbertReader {
 			HttpResponse response;
 			try {
 				response = httpclient.execute(request);
-				InputStream is = response.getEntity().getContent();
-				BufferedInputStream buf = new BufferedInputStream(is, (int) response.getEntity().getContentLength());
-				picture = BitmapFactory.decodeStream(buf);
-				buf.close();
-				is.close();
-				imageCache.set(date, picture);
-				availabilityCache.put(date, true);
+
+				if (response.getStatusLine().getStatusCode() == httpRequestIsSuccessful) {
+					InputStream is = response.getEntity().getContent();
+					picture = BitmapFactory.decodeStream(is);
+					is.close();
+					imageCache.set(date, picture);
+					availabilityCache.put(date, true);
+				} else {
+					throw new NetworkException("Download failed with reason: "
+							+ response.getStatusLine().getReasonPhrase());
+				}
 			} catch (ClientProtocolException e) {
 				e.printStackTrace();
 				throw new NetworkException(e);
@@ -169,7 +172,7 @@ public final class DilbertReader {
 				+ Integer.toString(previousDay.getDayOfMonth());
 	}
 
-	private boolean isDilbertAvailable(String dateString) throws NetworkException {
+	private synchronized boolean isDilbertAvailable(String dateString) throws NetworkException {
 		boolean dilbertIsAvailable = false;
 
 		if (availabilityCache.containsKey(dateString)) {
