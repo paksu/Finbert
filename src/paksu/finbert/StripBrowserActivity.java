@@ -26,10 +26,11 @@ public final class StripBrowserActivity extends Activity implements ViewFactory 
 	private TextView commentCount;
 	private final DilbertReader dilbertReader;
 	private Direction nextSlideDirection;
-	private DilbertDate date = DilbertDate.newest();
 	private boolean isFetchingImage = false;
 	private boolean isFetchingCommentCount = false;
 	private final CommentHandler commentHandler = new CommentHandler();
+	private DilbertDate dilbertDate = DilbertDate.newest();
+	private final ImageCache imagecache = ImageCache.getInstance();
 
 	private class BackgroundDownloader extends AsyncTask<Void, Void, Void> {
 		@Override
@@ -40,7 +41,7 @@ public final class StripBrowserActivity extends Activity implements ViewFactory 
 		@Override
 		protected Void doInBackground(Void... params) {
 			try {
-				dilbertReader.readCurrent();
+				dilbertReader.downloadFinbertForDate(dilbertDate);
 			} catch (NetworkException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -67,7 +68,7 @@ public final class StripBrowserActivity extends Activity implements ViewFactory 
 		@Override
 		protected Void doInBackground(Void... params) {
 			try {
-				fetchedCommentCount = commentHandler.getCommentCount(dilbertReader.getCurrentDate());
+				fetchedCommentCount = commentHandler.getCommentCount("2011-08-22");
 			} catch (JsonParseException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -148,9 +149,8 @@ public final class StripBrowserActivity extends Activity implements ViewFactory 
 	}
 
 	private void changeToNextDayIfAvailable() {
-		if (dilbertReader.isNextAvailable()) {
-			date = date.next();
-			dilbertReader.nextDay();
+		if (dilbertReader.isDilbertAvailableForDate(dilbertDate.next())) {
+			dilbertDate = dilbertDate.next();
 			nextSlideDirection = Direction.RIGHT;
 			fetchNewFinbert();
 			fetchCommentCount();
@@ -162,9 +162,8 @@ public final class StripBrowserActivity extends Activity implements ViewFactory 
 	}
 
 	private void changeToPreviousDayIfAvailable() {
-		if (dilbertReader.isPreviousAvailable()) {
-			date = date.previous();
-			dilbertReader.previousDay();
+		if (dilbertReader.isDilbertAvailableForDate(dilbertDate.previous())) {
+			dilbertDate = dilbertDate.previous();
 			nextSlideDirection = Direction.LEFT;
 			fetchNewFinbert();
 			fetchCommentCount();
@@ -172,16 +171,18 @@ public final class StripBrowserActivity extends Activity implements ViewFactory 
 	}
 
 	private void updateNavigationButtonStates() {
-		nextButton.setEnabled(dilbertReader.isNextAvailable());
-		prevButton.setEnabled(dilbertReader.isPreviousAvailable());
+		// TODO: jotai j‰rkev‰mp‰‰ ?
+		nextButton.setEnabled(dilbertReader.isDilbertAvailableForDate(dilbertDate.next()));
+		prevButton.setEnabled(dilbertReader.isDilbertAvailableForDate(dilbertDate.previous()));
 	}
 
 	private void updateTitle() {
-		setTitle("Finbert - " + dilbertReader.getCurrentDate());
+		// TODO: jotai j‰rkev‰mp‰‰ ?
+		setTitle("Finbert - " + dilbertDate.getYear() + "-" + dilbertDate.getMonth() + "-" + dilbertDate.getDay());
 	}
 
 	private void fetchNewFinbert() {
-		if (dilbertReader.hasCurrentCached()) {
+		if (imagecache.imageIsCachedFor(dilbertDate)) {
 			updateTitle();
 			slideToCurrent();
 			updateNavigationButtonStates();
@@ -213,13 +214,7 @@ public final class StripBrowserActivity extends Activity implements ViewFactory 
 	}
 
 	private Drawable currentDilbertDrawable() {
-		try {
-			return new BitmapDrawable(dilbertReader.readCurrent());
-		} catch (NetworkException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return new BitmapDrawable();
-		}
+		return new BitmapDrawable(imagecache.get(dilbertDate));
 	}
 
 	private Drawable temporaryDrawable() {
@@ -228,9 +223,9 @@ public final class StripBrowserActivity extends Activity implements ViewFactory 
 
 	private void launchCommentsActivityForCurrentDate() {
 		Intent intent = new Intent(this, CommentsActivity.class);
-		intent.putExtra(CommentsActivity.EXTRAS_YEAR, date.getYear());
-		intent.putExtra(CommentsActivity.EXTRAS_MONTH, date.getMonth());
-		intent.putExtra(CommentsActivity.EXTRAS_DAY, date.getDay());
+		intent.putExtra(CommentsActivity.EXTRAS_YEAR, dilbertDate.getYear());
+		intent.putExtra(CommentsActivity.EXTRAS_MONTH, dilbertDate.getMonth());
+		intent.putExtra(CommentsActivity.EXTRAS_DAY, dilbertDate.getDay());
 		startActivity(intent);
 	}
 
