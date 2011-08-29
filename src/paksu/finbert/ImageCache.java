@@ -7,17 +7,25 @@ import android.graphics.Bitmap;
 import android.util.Log;
 
 public class ImageCache {
-	private final HashMap<String, SoftReference<Bitmap>> imageCache;
+	private final HashMap<DilbertDate, SoftReference<Bitmap>> imageCache;
+	private static ImageCache instance = null;
 
-	public ImageCache() {
-		imageCache = new HashMap<String, SoftReference<Bitmap>>();
+	public static ImageCache getInstance() {
+		if (instance == null) {
+			instance = new ImageCache();
+		}
+		return instance;
 	}
 
-	public void set(String date, Bitmap picture) {
+	protected ImageCache() {
+		imageCache = new HashMap<DilbertDate, SoftReference<Bitmap>>();
+	}
+
+	public void set(DilbertDate date, Bitmap picture) {
 		imageCache.put(date, new SoftReference<Bitmap>(picture));
 	}
 
-	public Bitmap get(String date) {
+	public Bitmap get(DilbertDate date) {
 		Bitmap image = null;
 		SoftReference<Bitmap> cachedImage = imageCache.get(date);
 		if (cachedImage != null) {
@@ -26,7 +34,7 @@ public class ImageCache {
 		return image;
 	}
 
-	public void delete(String date) {
+	public void delete(DilbertDate date) {
 		imageCache.remove(date);
 	}
 
@@ -45,4 +53,5 @@ public class ImageCache {
 		}
 		return cached;
 	}
+
 }
