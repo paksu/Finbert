@@ -42,8 +42,20 @@ public final class DilbertDate {
 		return new DilbertDate(previous);
 	}
 
+	private static boolean isValid(LocalDate date) {
+		return !(isWeekend(date) || isInFuture(date) || isOlderThanYear(date));
+	}
+
 	private static boolean isWeekend(LocalDate date) {
 		return date.getDayOfWeek() == SATURDAY || date.getDayOfWeek() == SUNDAY;
+	}
+
+	private static boolean isInFuture(LocalDate date) {
+		return date.isAfter(LocalDate.now());
+	}
+
+	private static boolean isOlderThanYear(LocalDate date) {
+		return LocalDate.now().minusYears(1).isAfter(date);
 	}
 
 	@Override
@@ -61,10 +73,15 @@ public final class DilbertDate {
 	}
 
 	public static DilbertDate exactlyForDate(int year, int month, int day) {
-		throw new UnsupportedOperationException("not implemented");
+		LocalDate date = new LocalDate(year, month, day);
+		if (!isValid(date)) {
+			throw new IllegalArgumentException("not valid date " + date);
+		}
+
+		return new DilbertDate(date);
 	}
 
-	public static DilbertDate nearestToDate(int year, int moth, int day) {
+	public static DilbertDate nearestToDate(int year, int month, int day) {
 		throw new UnsupportedOperationException("not implemented");
 	}
 

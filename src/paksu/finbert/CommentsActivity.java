@@ -20,7 +20,9 @@ import android.widget.TextView;
  *
  */
 public final class CommentsActivity extends Activity {
-	public static final String EXTRAS_DATE = "date";
+	public static final String EXTRAS_YEAR = "year";
+	public static final String EXTRAS_MONTH = "month";
+	public static final String EXTRAS_DAY = "day";
 
 	private static class CommentsAdapter extends ArrayAdapter<Comment> {
 
@@ -67,7 +69,11 @@ public final class CommentsActivity extends Activity {
 		testComments.add(new Comment("paska", "daddari", null));
 		commentsListView.setAdapter(new CommentsAdapter(getBaseContext(), 0, testComments));
 
-		String date = getIntent().getExtras().getString(EXTRAS_DATE);
+		Bundle extras = getIntent().getExtras();
+		int year = extras.getInt(EXTRAS_YEAR);
+		int month = extras.getInt(EXTRAS_MONTH);
+		int day = extras.getInt(EXTRAS_DAY);
+		DilbertDate date = DilbertDate.exactlyForDate(year, month, day);
 		setTitle("Finbert - comments - " + date);
 	}
 }

@@ -26,6 +26,7 @@ public final class StripBrowserActivity extends Activity implements ViewFactory 
 	private TextView commentCount;
 	private final DilbertReader dilbertReader;
 	private Direction nextSlideDirection;
+	private DilbertDate date = DilbertDate.newest();
 	private boolean isFetchingImage = false;
 	private boolean isFetchingCommentCount = false;
 	private final CommentHandler commentHandler = new CommentHandler();
@@ -148,6 +149,7 @@ public final class StripBrowserActivity extends Activity implements ViewFactory 
 
 	private void changeToNextDayIfAvailable() {
 		if (dilbertReader.isNextAvailable()) {
+			date = date.next();
 			dilbertReader.nextDay();
 			nextSlideDirection = Direction.RIGHT;
 			fetchNewFinbert();
@@ -161,6 +163,7 @@ public final class StripBrowserActivity extends Activity implements ViewFactory 
 
 	private void changeToPreviousDayIfAvailable() {
 		if (dilbertReader.isPreviousAvailable()) {
+			date = date.previous();
 			dilbertReader.previousDay();
 			nextSlideDirection = Direction.LEFT;
 			fetchNewFinbert();
@@ -225,7 +228,9 @@ public final class StripBrowserActivity extends Activity implements ViewFactory 
 
 	private void launchCommentsActivityForCurrentDate() {
 		Intent intent = new Intent(this, CommentsActivity.class);
-		intent.putExtra(CommentsActivity.EXTRAS_DATE, dilbertReader.getCurrentDate());
+		intent.putExtra(CommentsActivity.EXTRAS_YEAR, date.getYear());
+		intent.putExtra(CommentsActivity.EXTRAS_MONTH, date.getMonth());
+		intent.putExtra(CommentsActivity.EXTRAS_DAY, date.getDay());
 		startActivity(intent);
 	}
 
