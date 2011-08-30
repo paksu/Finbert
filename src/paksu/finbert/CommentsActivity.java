@@ -103,6 +103,9 @@ public final class CommentsActivity extends Activity {
 
 		@Override
 		protected void onPostExecute(List<Comment> comments) {
+			for (Comment comment : comments) {
+				Log.d("finbert", comment.toString());
+			}
 			commentsListView.setAdapter(new CommentsAdapter(getBaseContext(), 0, comments));
 		}
 	}

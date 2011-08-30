@@ -59,7 +59,7 @@ public class CommentHandler {
 
 		try {
 			HttpResponse response = httpclient.execute(request, new BasicHttpContext());
-			String responseBody = EntityUtils.toString(response.getEntity());
+			String responseBody = EntityUtils.toString(response.getEntity(), "utf-8");
 			isSuccess = gson.fromJson(responseBody, boolean.class);
 		} catch (ClientProtocolException e) {
 			e.printStackTrace();
@@ -102,7 +102,7 @@ public class CommentHandler {
 
 		try {
 			HttpResponse response = httpclient.execute(request);
-			String responseBody = EntityUtils.toString(response.getEntity());
+			String responseBody = EntityUtils.toString(response.getEntity(), "utf-8");
 			commentCount = gson.fromJson(responseBody, Integer.class);
 		} catch (ClientProtocolException e) {
 			e.printStackTrace();
@@ -131,7 +131,7 @@ public class CommentHandler {
 		HttpResponse response;
 		try {
 			response = httpclient.execute(request);
-			String responseBody = EntityUtils.toString(response.getEntity());
+			String responseBody = EntityUtils.toString(response.getEntity(), "utf-8");
 			return responseBody;
 		} catch (ClientProtocolException e) {
 			e.printStackTrace();
@@ -144,7 +144,7 @@ public class CommentHandler {
 
 	private List<Comment> deserializeCommentsJSON(String commentJSON) throws NetworkException {
 		List<Comment> commentList = new ArrayList<Comment>();
-
+		Log.d("finbert", commentJSON);
 		try {
 			Type collectionType = new TypeToken<List<Comment>>() {
 			}.getType();
