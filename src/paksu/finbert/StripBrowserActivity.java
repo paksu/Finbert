@@ -43,6 +43,8 @@ public final class StripBrowserActivity extends Activity implements ViewFactory 
 		@Override
 		protected void onPreExecute() {
 			checkAvailabilityTaskRunning = true;
+			nextButton.setEnabled(false);
+			nextButton.setEnabled(false);
 		}
 
 		@Override
