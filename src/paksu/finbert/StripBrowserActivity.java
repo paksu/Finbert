@@ -1,6 +1,8 @@
 package paksu.finbert;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -43,8 +45,6 @@ public final class StripBrowserActivity extends Activity implements ViewFactory 
 		@Override
 		protected void onPreExecute() {
 			checkAvailabilityTaskRunning = true;
-			nextButton.setEnabled(false);
-			nextButton.setEnabled(false);
 		}
 
 		@Override
@@ -60,14 +60,7 @@ public final class StripBrowserActivity extends Activity implements ViewFactory 
 
 		@Override
 		protected void onPostExecute(Void result) {
-			for (Entry<DilbertDate, Boolean> entry : availabilityCache.entrySet()) {
-				if (selectedDate.next().equals(entry.getKey())) {
-					nextButton.setEnabled(entry.getValue());
-				} else if (selectedDate.previous().equals(entry.getKey())) {
-					prevButton.setEnabled(entry.getValue());
-				}
-			}
-
+			updateButtonStates();
 			checkAvailabilityTaskRunning = false;
 		}
 	}
@@ -124,10 +117,20 @@ public final class StripBrowserActivity extends Activity implements ViewFactory 
 	private final OnFlingListener imageSwitcherOnFlingListener = new OnFlingListener() {
 		@Override
 		public void onFling(Direction direction) {
+			if (checkAvailabilityTaskRunning) {
+				return;
+			}
+
 			if (direction == Direction.LEFT) {
-				changeToNextDay();
+				DilbertDate next = selectedDate.next();
+				if (availabilityCache.containsKey(next) && availabilityCache.get(next) == true) {
+					changeToNextDay();
+				}
 			} else if (direction == Direction.RIGHT) {
-				changeToPreviousDay();
+				DilbertDate previous = selectedDate.previous();
+				if (availabilityCache.containsKey(previous) && availabilityCache.get(previous) == true) {
+					changeToPreviousDay();
+				}
 			}
 		}
 	};
@@ -146,11 +149,14 @@ public final class StripBrowserActivity extends Activity implements ViewFactory 
 
 		commentCount = (TextView) findViewById(R.id.comments_count);
 
+		availabilityCache.put(DilbertDate.newest().next(), false);
+
 		setFonts();
 		fadeToTemporary();
 		downloadAndFadeTo(selectedDate);
 		fetchCommentCount();
-		checkAvailabilityForDates(selectedDate.previous(), selectedDate.next());
+		updateButtonStates();
+		checkAvailabilityOfNearbyDates(selectedDate);
 	}
 
 	private void setFonts() {
@@ -186,18 +192,56 @@ public final class StripBrowserActivity extends Activity implements ViewFactory 
 		selectedDate = selectedDate.next();
 		fetchFinbert(selectedDate, Direction.RIGHT);
 		fetchCommentCount();
-		checkAvailabilityForDates(selectedDate.next());
+		checkAvailabilityOfNearbyDates(selectedDate);
 	}
 
 	private void changeToPreviousDay() {
 		selectedDate = selectedDate.previous();
 		fetchFinbert(selectedDate, Direction.LEFT);
 		fetchCommentCount();
-		checkAvailabilityForDates(selectedDate.previous());
+		checkAvailabilityOfNearbyDates(selectedDate);
 	}
 
-	private void checkAvailabilityForDates(DilbertDate... dates) {
-		new CheckAvailabilityTask().execute(dates);
+	private void updateButtonStates() {
+		DilbertDate previous = selectedDate.previous();
+		DilbertDate next = selectedDate.next();
+		for (Entry<DilbertDate, Boolean> entry : availabilityCache.entrySet()) {
+			if (next.equals(entry.getKey())) {
+				nextButton.setEnabled(entry.getValue());
+			} else if (previous.equals(entry.getKey())) {
+				prevButton.setEnabled(entry.getValue());
+			}
+		}
+	}
+
+	private void checkAvailabilityOfNearbyDates(DilbertDate date) {
+		List<DilbertDate> datesToCheck = new ArrayList<DilbertDate>();
+
+		DilbertDate dayAfter = date.next();
+		if (shouldBeChecked(dayAfter)) {
+			datesToCheck.add(dayAfter);
+		}
+
+		DilbertDate twoDaysAfter = dayAfter.next();
+		if (shouldBeChecked(twoDaysAfter)) {
+			datesToCheck.add(dayAfter);
+		}
+
+		DilbertDate dayBefore = date.previous();
+		if (shouldBeChecked(dayBefore)) {
+			datesToCheck.add(dayBefore);
+		}
+
+		DilbertDate twoDaysBefore = dayBefore.previous();
+		if (shouldBeChecked(dayBefore)) {
+			datesToCheck.add(twoDaysBefore);
+		}
+
+		new CheckAvailabilityTask().execute(datesToCheck.toArray(new DilbertDate[datesToCheck.size()]));
+	}
+
+	private boolean shouldBeChecked(DilbertDate date) {
+		return !availabilityCache.containsKey(date) && !date.isFutureDate();
 	}
 
 	private void updateTitle() {

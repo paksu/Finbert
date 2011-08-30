@@ -24,6 +24,18 @@ public final class DilbertDate {
 		return date.getYear();
 	}
 
+	public boolean isAfter(DilbertDate other) {
+		return date.isAfter(other.date);
+	}
+
+	public boolean isBefore(DilbertDate other) {
+		return date.isBefore(other.date);
+	}
+
+	public boolean isFutureDate() {
+		return date.isAfter(newest().date);
+	}
+
 	public DilbertDate next() {
 		LocalDate next = date.plusDays(1);
 		while (isWeekend(next)) {
