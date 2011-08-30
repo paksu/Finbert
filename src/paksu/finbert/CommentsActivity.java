@@ -15,6 +15,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -26,6 +27,7 @@ public final class CommentsActivity extends Activity {
 	public static final String EXTRAS_MONTH = "month";
 	public static final String EXTRAS_DAY = "day";
 	private final CommentHandler commentHandler = CommentHandler.getInstance();
+	private DilbertDate date;
 	private ListView commentsListView;
 
 	private static class CommentsAdapter extends ArrayAdapter<Comment> {
@@ -78,6 +80,8 @@ public final class CommentsActivity extends Activity {
 			} else {
 				Log.d("finbert", "Epic fail");
 			}
+
+			new GetCommentsForDateTask().execute(date);
 		}
 	}
 
@@ -109,26 +113,40 @@ public final class CommentsActivity extends Activity {
 		setContentView(R.layout.comments);
 
 		commentsListView = (ListView) findViewById(R.id.comments_list);
-		/*
-		 * List<Comment> testComments = new ArrayList<Comment>();
-		 * testComments.add(new Comment("paska", "daddari", null));
-		 * testComments.add(new Comment("paska", "daddari", null));
-		 * testComments.add(new Comment("paska", "daddari", null));
-		 * testComments.add(new Comment("paska", "daddari", null));
-		 * testComments.add(new Comment("paska", "daddari", null));
-		 * testComments.add(new Comment("paska", "daddari", null));
-		 * testComments.add(new Comment("paska", "daddari", null));
-		 * testComments.add(new Comment("paska", "daddari", null));
-		 * commentsListView.setAdapter(new CommentsAdapter(getBaseContext(), 0,
-		 * testComments));
-		 */
 
 		Bundle extras = getIntent().getExtras();
 		int year = extras.getInt(EXTRAS_YEAR);
 		int month = extras.getInt(EXTRAS_MONTH);
 		int day = extras.getInt(EXTRAS_DAY);
-		DilbertDate date = DilbertDate.exactlyForDate(year, month, day);
+		date = DilbertDate.exactlyForDate(year, month, day);
+
 		setTitle("Finbert - comments - " + date);
+
 		new GetCommentsForDateTask().execute(date);
+	}
+
+	public void buttonListener(View v) {
+		if (v.getId() == R.id.post_comment) {
+			if (commentInputIsValid()) {
+				postComment(getCommentInput());
+			}
+		}
+	}
+
+	private boolean commentInputIsValid() {
+		EditText commentEditText = (EditText) findViewById(R.id.comment_edit_text);
+		String commentInput = commentEditText.getText().toString();
+		return commentInput.length() > 0;
+	}
+
+	private String getCommentInput() {
+		return ((EditText) findViewById(R.id.comment_edit_text)).getText().toString();
+	}
+
+	private void postComment(String text) {
+		String name = "daddari";
+		String date = this.date.toString();
+		Comment comment = new Comment(text, name, date);
+		new PostNewCommentForDateDateTask().execute(comment);
 	}
 }
