@@ -9,12 +9,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.http.HttpResponse;
-import org.apache.http.NameValuePair;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.utils.URLEncodedUtils;
-import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.util.EntityUtils;
 
 import android.net.Uri;
@@ -30,27 +28,43 @@ public class CommentHandler {
 	private final String serverPort = "4325";
 	private final Gson gson = new Gson();
 	private final HttpClient httpclient = HttpClientFactory.getClient();
+	private static CommentHandler instance;
+
+	protected CommentHandler() {
+
+	}
+
+	public static CommentHandler getInstance() {
+		if (instance == null) {
+			instance = new CommentHandler();
+		}
+
+		return instance;
+	}
 
 	public boolean setComment(Comment commentToAdd) throws NetworkException {
-		String commentsUrl = serverUrl + ":" + serverPort + "/comments/insert?";
-		List<NameValuePair> requestParameters = new ArrayList<NameValuePair>();
+		Uri uri = new Uri.Builder()
+				.scheme("http")
+				.encodedAuthority(serverUrl + ":" + serverPort)
+				.path("comments/insert")
+				.appendQueryParameter("date", commentToAdd.getDate()) // TODO:
+				.appendQueryParameter("checksum", calculateChecksum(commentToAdd.getDate()))
+				.appendQueryParameter("name", commentToAdd.getName())
+				.appendQueryParameter("comment", commentToAdd.getComment())
+				.build();
 
-		requestParameters.add(new BasicNameValuePair("comment", commentToAdd.getComment()));
-		requestParameters.add(new BasicNameValuePair("name", commentToAdd.getName()));
-		requestParameters.add(new BasicNameValuePair("date", commentToAdd.getDate()));
-		requestParameters.add(new BasicNameValuePair("checksum", calculateChecksum(commentToAdd.getDate())));
-
-		commentsUrl += URLEncodedUtils.format(requestParameters, "utf-8");
-
-		HttpGet request = new HttpGet(commentsUrl);
+		HttpGet request = new HttpGet(uri.toString());
 
 		boolean isSuccess = false;
 
 		try {
-			HttpResponse response = httpclient.execute(request);
+			HttpResponse response = httpclient.execute(request, new BasicHttpContext());
 			String responseBody = EntityUtils.toString(response.getEntity());
 			isSuccess = gson.fromJson(responseBody, boolean.class);
 		} catch (ClientProtocolException e) {
+			e.printStackTrace();
+			throw new NetworkException(e);
+		} catch (JsonParseException e) {
 			e.printStackTrace();
 			throw new NetworkException(e);
 		} catch (IOException e) {
@@ -61,7 +75,7 @@ public class CommentHandler {
 		return isSuccess;
 	}
 
-	public List<Comment> getComments(DilbertDate date) throws NetworkException, JsonParseException {
+	public List<Comment> getComments(DilbertDate date) throws NetworkException {
 		List<Comment> commentList = new ArrayList<Comment>();
 		String commentsJSON;
 
@@ -71,7 +85,7 @@ public class CommentHandler {
 		return commentList;
 	}
 
-	public int getCommentCount(DilbertDate date) throws NetworkException, JsonParseException {
+	public int getCommentCount(DilbertDate date) throws NetworkException {
 		Uri uri = new Uri.Builder()
 				.scheme("http")
 				.encodedAuthority(serverUrl + ":" + serverPort)
@@ -93,6 +107,9 @@ public class CommentHandler {
 		} catch (ClientProtocolException e) {
 			e.printStackTrace();
 			throw new NetworkException(e);
+		} catch (JsonParseException e) {
+			e.printStackTrace();
+			throw new NetworkException(e);
 		} catch (IOException e) {
 			e.printStackTrace();
 			throw new NetworkException(e);
@@ -102,14 +119,15 @@ public class CommentHandler {
 	}
 
 	private String readCommentsFromServer(DilbertDate date) throws NetworkException {
-		String commentsUrl = serverUrl + ":" + serverPort + "/comments/get?";
-		List<NameValuePair> requestParameters = new ArrayList<NameValuePair>();
-		requestParameters.add(new BasicNameValuePair("date", date.toUriString()));
-		requestParameters.add(new BasicNameValuePair("checksum", calculateChecksum(date.toUriString())));
+		Uri uri = new Uri.Builder()
+				.scheme("http")
+				.encodedAuthority(serverUrl + ":" + serverPort)
+				.path("comments/get")
+				.appendQueryParameter("date", date.toUriString())
+				.appendQueryParameter("checksum", calculateChecksum(date.toUriString()))
+				.build();
 
-		commentsUrl += URLEncodedUtils.format(requestParameters, "utf-8");
-
-		HttpGet request = new HttpGet(commentsUrl);
+		HttpGet request = new HttpGet(uri.toString());
 		HttpResponse response;
 		try {
 			response = httpclient.execute(request);

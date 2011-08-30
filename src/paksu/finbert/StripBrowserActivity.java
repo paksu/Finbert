@@ -31,7 +31,7 @@ public final class StripBrowserActivity extends Activity implements ViewFactory 
 	private TextView commentCount;
 
 	private final DilbertReader dilbertReader = DilbertReader.getInstance();
-	private final CommentHandler commentHandler = new CommentHandler();
+	private final CommentHandler commentHandler = CommentHandler.getInstance();
 	private final ImageCache imagecache = ImageCache.getInstance();
 
 	private final Map<DilbertDate, Boolean> availabilityCache = new HashMap<DilbertDate, Boolean>();

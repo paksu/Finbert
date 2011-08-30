@@ -97,7 +97,7 @@ public class DilbertReader {
 		HttpResponse response;
 
 		try {
-			response = httpclient.execute(request);
+			response = httpclient.execute(request, new BasicHttpContext());
 			if (response.getStatusLine().getStatusCode() == httpRequestIsSuccessful) {
 				isAvailable = true;
 			}

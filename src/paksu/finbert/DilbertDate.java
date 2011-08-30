@@ -59,7 +59,7 @@ public final class DilbertDate {
 	}
 
 	public String toUriString() {
-		return String.format("%d-%d-%d", date.getYear(), date.getMonthOfYear(), date.getDayOfWeek());
+		return String.format("%d-%d-%d", date.getYear(), date.getMonthOfYear(), date.getDayOfMonth());
 	}
 
 	@Override
