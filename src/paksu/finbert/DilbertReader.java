@@ -6,27 +6,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.http.HttpResponse;
-import org.apache.http.HttpVersion;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.params.HttpClientParams;
 import org.apache.http.client.utils.URLEncodedUtils;
-import org.apache.http.conn.params.ConnManagerParams;
-import org.apache.http.conn.params.ConnPerRoute;
-import org.apache.http.conn.routing.HttpRoute;
-import org.apache.http.conn.scheme.PlainSocketFactory;
-import org.apache.http.conn.scheme.Scheme;
-import org.apache.http.conn.scheme.SchemeRegistry;
-import org.apache.http.conn.ssl.SSLSocketFactory;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
 import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.params.BasicHttpParams;
-import org.apache.http.params.CoreProtocolPNames;
-import org.apache.http.params.HttpConnectionParams;
-import org.apache.http.params.HttpParams;
 import org.apache.http.protocol.BasicHttpContext;
 
 import android.graphics.Bitmap;
@@ -36,43 +21,9 @@ import android.util.Log;
 public class DilbertReader {
 	private final String defaultDilbertURL = "http://www.taloussanomat.fi/dilbert/dilbert.php?";
 	private static DilbertReader instance = null;
-	private final ImageCache imageCache;
-	private final HttpClient httpclient;
-	private final int socketTimeoutDelay = 5 * 1000; // 5 seconds
-	private final int connectionTimeoutDelay = 10 * 1000; // 10 second
+	private final ImageCache imageCache = ImageCache.getInstance();
+	private final HttpClient httpclient = HttpClientFactory.getClient();
 	private final int httpRequestIsSuccessful = 200; // HTTP/1.1 200 OK
-
-	protected DilbertReader() {
-
-		SchemeRegistry schemeRegistry = new SchemeRegistry();
-		schemeRegistry.register(new Scheme("http", PlainSocketFactory.getSocketFactory(), 80));
-		schemeRegistry.register(new Scheme("https", SSLSocketFactory.getSocketFactory(), 443));
-
-		HttpParams params = new BasicHttpParams();
-		params.setParameter(CoreProtocolPNames.PROTOCOL_VERSION, HttpVersion.HTTP_1_1);
-
-		HttpConnectionParams.setStaleCheckingEnabled(params, false);
-		HttpConnectionParams.setSocketBufferSize(params, 8192);
-		HttpConnectionParams.setConnectionTimeout(params, connectionTimeoutDelay);
-		HttpConnectionParams.setSoTimeout(params, socketTimeoutDelay);
-
-		ConnManagerParams.setTimeout(params, connectionTimeoutDelay);
-		ConnManagerParams.setMaxTotalConnections(params, 100);
-		ConnManagerParams.setMaxConnectionsPerRoute(params, new ConnPerRoute() {
-
-			@Override
-			public int getMaxForRoute(HttpRoute route) {
-				return 10;
-			}
-		});
-
-		HttpClientParams.setRedirecting(params, false);
-
-		ThreadSafeClientConnManager manager = new ThreadSafeClientConnManager(params, schemeRegistry);
-
-		httpclient = new DefaultHttpClient(manager, params);
-		imageCache = ImageCache.getInstance();
-	}
 
 	public static DilbertReader getInstance() {
 		if (instance == null) {
