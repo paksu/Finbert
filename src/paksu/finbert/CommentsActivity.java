@@ -4,6 +4,7 @@
 package paksu.finbert;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import android.app.Activity;
@@ -106,6 +107,8 @@ public final class CommentsActivity extends Activity {
 			for (Comment comment : comments) {
 				Log.d("finbert", comment.toString());
 			}
+			Collections.reverse(comments);
+			((EditText) findViewById(R.id.comment_edit_text)).setText("");
 			commentsListView.setAdapter(new CommentsAdapter(getBaseContext(), 0, comments));
 		}
 	}
