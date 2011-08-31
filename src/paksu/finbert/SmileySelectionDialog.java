@@ -32,9 +32,14 @@ public class SmileySelectionDialog extends Dialog implements OnItemClickListener
 
 		@Override
 		public View getView(int position, View convertView, ViewGroup parent) {
-			Smiley smiley = getItem(position);
-			View v = LayoutInflater.from(getContext()).inflate(R.layout.smiley_list_item, null);
+			View v;
+			if (convertView != null) {
+				v = convertView;
+			} else {
+				v = LayoutInflater.from(getContext()).inflate(R.layout.smiley_list_item, null);
+			}
 
+			Smiley smiley = getItem(position);
 			ImageView smileyImage = (ImageView) v.findViewById(R.id.smiley_image);
 			smileyImage.setImageResource(smiley.getDrawableId());
 
