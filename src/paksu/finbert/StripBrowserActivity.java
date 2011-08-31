@@ -109,7 +109,11 @@ public final class StripBrowserActivity extends Activity implements ViewFactory 
 		@Override
 		protected void onPostExecute(Integer result) {
 			if (date.equals(selectedDate)) {
-				commentCount.setText(result.toString());
+				if (result != null) {
+					commentCount.setText(result.toString());
+				} else {
+					commentCount.setText("-");
+				}
 			}
 		}
 	}

@@ -13,6 +13,7 @@ public class Smiley {
 	static {
 		smileys.add(new Smiley(R.drawable.monkey, R.string.monkey, ":(|)"));
 		smileys.add(new Smiley(R.drawable.pig, R.string.pig, ":(:)"));
+		smileys.add(new Smiley(R.drawable.dogbert, R.string.dogbert, "38]"));
 	}
 
 	private Smiley(int drawableId, int stringId, String presentation) {

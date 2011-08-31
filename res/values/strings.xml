@@ -4,6 +4,8 @@
     <string name="share">share:</string>
     <string name="comments">comments:</string>
     <string name="click_to_comment">click to comment</string>
+    <string name="select_smiley">Select smiley</string>
     <string name="monkey">Monkey</string>
     <string name="pig">Pig</string>
+    <string name="dogbert">Dogbert</string>
 </resources>

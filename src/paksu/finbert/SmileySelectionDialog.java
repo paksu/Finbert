@@ -5,9 +5,11 @@ import java.util.List;
 import android.app.Dialog;
 import android.content.Context;
 import android.graphics.Color;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
@@ -16,6 +18,12 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 public class SmileySelectionDialog extends Dialog implements OnItemClickListener {
+	public interface OnSmileySelectedListener {
+		void onSmileySelected(Smiley selected);
+	}
+
+	private OnSmileySelectedListener listener;
+
 	private class SmileyAdapter extends ArrayAdapter<Smiley> {
 
 		public SmileyAdapter(Context context, int textViewResourceId, List<Smiley> objects) {
@@ -43,18 +51,37 @@ public class SmileySelectionDialog extends Dialog implements OnItemClickListener
 
 	public SmileySelectionDialog(Context context) {
 		super(context);
-		setTitle("Select smiley");
+		requestWindowFeature(Window.FEATURE_LEFT_ICON);
+
 		ListView smileyListView = new ListView(context);
 		smileyListView.setAdapter(new SmileyAdapter(context, R.layout.smiley_list_item, Smiley.getAllSupported()));
-		smileyListView.setOnItemClickListener(this);
 		smileyListView.setBackgroundColor(Color.WHITE);
-
+		smileyListView.setCacheColorHint(Color.WHITE);
+		smileyListView.setClickable(true);
+		smileyListView.setFocusable(true);
+		smileyListView.requestFocus();
+		smileyListView.setOnItemClickListener(this);
+		smileyListView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
 		setContentView(smileyListView);
+		setTitle(R.string.select_smiley);
+		setFeatureDrawableResource(Window.FEATURE_LEFT_ICON, android.R.drawable.ic_dialog_info);
 	}
 
 	@Override
-	public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
-		// TODO Auto-generated method stub
+	protected void onStop() {
+		super.onStop();
+		listener = null;
+	}
 
+	public void setOnSmileySelectedListener(OnSmileySelectedListener listener) {
+		this.listener = listener;
+	}
+
+	@Override
+	public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+		Log.d("finbert", "click");
+		SmileyAdapter adapter = (SmileyAdapter) parent.getAdapter();
+		listener.onSmileySelected(adapter.getItem(position));
+		dismiss();
 	}
 }

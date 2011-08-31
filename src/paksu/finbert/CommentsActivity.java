@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import paksu.finbert.SmileySelectionDialog.OnSmileySelectedListener;
 import android.app.Activity;
 import android.content.Context;
 import android.os.AsyncTask;
@@ -23,13 +24,14 @@ import android.widget.TextView;
 /**
  *
  */
-public final class CommentsActivity extends Activity {
+public final class CommentsActivity extends Activity implements OnSmileySelectedListener {
 	public static final String EXTRAS_YEAR = "year";
 	public static final String EXTRAS_MONTH = "month";
 	public static final String EXTRAS_DAY = "day";
 	private final CommentHandler commentHandler = CommentHandler.getInstance();
 	private DilbertDate date;
 	private ListView commentsListView;
+	private EditText commentEditText;
 
 	private static class CommentsAdapter extends ArrayAdapter<Comment> {
 
@@ -119,6 +121,7 @@ public final class CommentsActivity extends Activity {
 		setContentView(R.layout.comments);
 
 		commentsListView = (ListView) findViewById(R.id.comments_list);
+		commentEditText = (EditText) findViewById(R.id.comment_edit_text);
 
 		Bundle extras = getIntent().getExtras();
 		int year = extras.getInt(EXTRAS_YEAR);
@@ -132,7 +135,9 @@ public final class CommentsActivity extends Activity {
 	}
 
 	public void smileyButtonClicked(View v) {
-		new SmileySelectionDialog(this).show();
+		SmileySelectionDialog dialog = new SmileySelectionDialog(this);
+		dialog.setOnSmileySelectedListener(this);
+		dialog.show();
 	}
 
 	public void buttonListener(View v) {
@@ -144,13 +149,12 @@ public final class CommentsActivity extends Activity {
 	}
 
 	private boolean commentInputIsValid() {
-		EditText commentEditText = (EditText) findViewById(R.id.comment_edit_text);
 		String commentInput = commentEditText.getText().toString();
 		return commentInput.length() > 0;
 	}
 
 	private String getCommentInput() {
-		return ((EditText) findViewById(R.id.comment_edit_text)).getText().toString();
+		return commentEditText.getText().toString();
 	}
 
 	private void postComment(String text) {
@@ -158,5 +162,21 @@ public final class CommentsActivity extends Activity {
 		String date = this.date.toString();
 		Comment comment = new Comment(text, name, date);
 		new PostNewCommentForDateDateTask().execute(comment);
+	}
+
+	@Override
+	public void onSmileySelected(Smiley selected) {
+		StringBuilder smileyAppendingBuilder = new StringBuilder();
+		String input = getCommentInput();
+		smileyAppendingBuilder.append(input);
+		if (!input.endsWith(" ")) {
+			smileyAppendingBuilder.append(" ");
+		}
+
+		smileyAppendingBuilder.append(selected.getPresentation());
+		smileyAppendingBuilder.append(" ");
+		String inputWithAppendedSmiley = smileyAppendingBuilder.toString();
+		commentEditText.setText(inputWithAppendedSmiley);
+		commentEditText.setSelection(inputWithAppendedSmiley.length() - 1);
 	}
 }
