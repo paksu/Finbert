@@ -64,8 +64,12 @@ public final class CommentsActivity extends Activity implements OnSmileySelected
 
 		@Override
 		public View getView(int position, View convertView, ViewGroup parent) {
-			Comment comment = getItem(position);
-			View commentItem = LayoutInflater.from(getContext()).inflate(R.layout.comment, null);
+			View commentItem;
+			if (convertView != null) {
+				commentItem = convertView;
+			} else {
+				commentItem = LayoutInflater.from(getContext()).inflate(R.layout.comment, null);
+			}
 
 			View commentLayout = commentItem.findViewById(R.id.comment_layout);
 			if (position % 2 == 0) {
@@ -74,6 +78,7 @@ public final class CommentsActivity extends Activity implements OnSmileySelected
 				commentLayout.setBackgroundDrawable(getContext().getResources().getDrawable(R.drawable.bubble_left));
 			}
 
+			Comment comment = getItem(position);
 			TextView commenterTextView = (TextView) commentItem.findViewById(R.id.commenter);
 			commenterTextView.setText(comment.getName());
 
