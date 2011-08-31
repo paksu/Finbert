@@ -7,10 +7,13 @@ var mac = "Wanha, eka, toka, HUUTO, kiroilu, v*ttuilu ja muu p*rseily kielletty 
 var mode = argv.mode;
 
 http.createServer(function (req, res) {
+  req.startTime = Date.now();
   req.rid = getRequestID();
+  req.addListener('end', requestEndCallback);
   var parsedUrl = require('url').parse(req.url, true);
   logger("RID [" + req.rid + "] :: New request");
   logger("RID [" + req.rid + "] :: ", parsedUrl);
+
   var valid = false;
   if(mode != 'debug') {
       if(messageIsValid(req)) { 
@@ -31,15 +34,14 @@ http.createServer(function (req, res) {
       return;
   }
 
-  if(handler[parsedUrl.pathname]) {
-     handler[parsedUrl.pathname](res, req);
+  if(allowedActions[parsedUrl.pathname]) {
+     allowedActions[parsedUrl.pathname](res, req);
   } else {
       res.end();
   }
-}).listen(4325,"192.168.1.100");
+}).listen(4325);
 
-var handler = {
-  '/comments/get': function comments_get (res, req) {
+function comments_get (res, req) {
      var query = require('url').parse(req.url, true).query;
      logger("RID [" + req.rid + "] :: ", query);
      dbconn.collection('comments').find({ date : query.date }, { _id: 0, created_on: 0 }).sort( { created_on: -1 }).toArray(function comments_get_callback (err, items){
@@ -47,9 +49,9 @@ var handler = {
 	 res.write(JSON.stringify(items));
 	 res.end();
      })
-  }, 
-
-  '/comments/insert': function comments_insert (res, req) {
+}
+ 
+function comments_insert (res, req) {
      var query = require('url').parse(req.url, true).query;
      logger("RID [" + req.rid + "] :: ", query);
      dbconn.collection('comments').insert({ date : query.date, name: query.name, comment : query.comment, created_on: new Date() }, function comments_insert_callback (){
@@ -58,8 +60,9 @@ var handler = {
          res.write(JSON.stringify(result));
          res.end();
      })
-  },
-  '/comments/count': function comments_count (res, req) {
+}
+
+function comments_count (res, req) {
      var query = require('url').parse(req.url, true).query;
      logger("RID [" + req.rid + "] :: ", query);
      dbconn.collection('comments').count({ date : query.date }, function comments_count_callback (err, result) {
@@ -67,7 +70,12 @@ var handler = {
          res.write(JSON.stringify(result));
          res.end();
      })
-  },
+}
+
+var allowedActions = {
+  '/comments/get'   : function(res,req) {  comments_get (res, req)    },
+  '/comments/insert': function(res,req) {  comments_insert (res, req) },
+  '/comments/count' : function(res,req) {  comments_count (res, req)  },
 }
 
 function messageIsValid (req) {
@@ -88,6 +96,9 @@ function messageIsValid (req) {
    return valid;
 }
 
+function requestEndCallback() {
+   logger("RID [" + this.rid + "] :: request done " + (Date.now() - this.startTime) / 1000 + " s" );
+}
 // between 1000 - 9999
 function getRequestID() {
    return Math.floor(Math.random() * 9000) + 1000;
