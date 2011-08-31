@@ -8,6 +8,7 @@ var mode = argv.mode;
 
 http.createServer(function (req, res) {
   req.rid = getRequestID();
+  res.startTime = Date.now();
   var parsedUrl = require('url').parse(req.url, true);
   logger("RID [" + req.rid + "] :: New request");
   logger("RID [" + req.rid + "] :: ", parsedUrl);
@@ -28,6 +29,7 @@ http.createServer(function (req, res) {
       logger("RID [" + req.rid + "] :: ", Status.FAILURE_INVALID_MESSAGE );
       res.write(JSON.stringify(result));
       res.end();
+      logger("RID [" + req.rid + "] :: request done " + (Date.now() - res.startTime) / 1000 + " s" );
       return;
   }
 
@@ -46,6 +48,7 @@ var handler = {
          logger("RID [" + req.rid + "] :: ", items);
 	 res.write(JSON.stringify(items));
 	 res.end();
+         logger("RID [" + req.rid + "] :: request done " + (Date.now() - res.startTime) / 1000 + " s" );
      })
   }, 
 
@@ -57,6 +60,7 @@ var handler = {
          logger("RID [" + req.rid + "] :: ", result);
          res.write(JSON.stringify(result));
          res.end();
+         logger("RID [" + req.rid + "] :: request done " + (Date.now() - res.startTime) / 1000 + " s" );
      })
   },
   '/comments/count': function comments_count (res, req) {
@@ -66,6 +70,7 @@ var handler = {
          logger("RID [" + req.rid + "] :: ", result);
          res.write(JSON.stringify(result));
          res.end();
+         logger("RID [" + req.rid + "] :: request done " + (Date.now() - res.startTime) / 1000 + " s" );
      })
   },
 }
