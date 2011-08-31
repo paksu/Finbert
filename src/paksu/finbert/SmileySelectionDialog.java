@@ -1,5 +1,7 @@
 package paksu.finbert;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import android.app.Dialog;
@@ -28,6 +30,15 @@ public class SmileySelectionDialog extends Dialog implements OnItemClickListener
 
 		public SmileyAdapter(Context context, int textViewResourceId, List<Smiley> objects) {
 			super(context, textViewResourceId, objects);
+			Collections.sort(objects, new Comparator<Smiley>() {
+				@Override
+				public int compare(Smiley first, Smiley second) {
+					String firstName = getContext().getResources().getString(first.getStringId());
+					String secondName = getContext().getResources().getString(second.getStringId());
+					return firstName.compareTo(secondName);
+				}
+			});
+
 		}
 
 		@Override
