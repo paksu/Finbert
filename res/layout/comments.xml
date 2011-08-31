@@ -38,10 +38,10 @@
 			android:layout_weight="2">
 		</EditText>
 		<Button
-			android:id="@+id/post_comment"
+			android:id="@+id/send_comment"
 			android:layout_width="wrap_content"
 			android:layout_height="fill_parent"
-			android:onClick="buttonListener"
+			android:onClick="sendCommentClicked"
 			android:text="Send"></Button>
 	</LinearLayout>
 </LinearLayout>

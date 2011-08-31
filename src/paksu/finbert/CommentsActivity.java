@@ -14,13 +14,16 @@ import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.text.Editable;
 import android.text.Html;
 import android.text.Html.ImageGetter;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -29,14 +32,6 @@ import android.widget.TextView;
  *
  */
 public final class CommentsActivity extends Activity implements OnSmileySelectedListener {
-	public static final String EXTRAS_YEAR = "year";
-	public static final String EXTRAS_MONTH = "month";
-	public static final String EXTRAS_DAY = "day";
-	private final CommentHandler commentHandler = CommentHandler.getInstance();
-	private DilbertDate date;
-	private ListView commentsListView;
-	private EditText commentEditText;
-
 	private class CommentsAdapter extends ArrayAdapter<Comment> {
 		private final List<Smiley> smileys = Smiley.getAllSupported();
 
@@ -144,13 +139,38 @@ public final class CommentsActivity extends Activity implements OnSmileySelected
 		}
 	}
 
+	public static final String EXTRAS_YEAR = "year";
+	public static final String EXTRAS_MONTH = "month";
+	public static final String EXTRAS_DAY = "day";
+	private final CommentHandler commentHandler = CommentHandler.getInstance();
+	private DilbertDate date;
+	private ListView commentsListView;
+	private EditText commentEditText;
+	private Button sendButton;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.comments);
 
+		sendButton = (Button) findViewById(R.id.send_comment);
+		sendButton.setEnabled(false);
 		commentsListView = (ListView) findViewById(R.id.comments_list);
 		commentEditText = (EditText) findViewById(R.id.comment_edit_text);
+		commentEditText.addTextChangedListener(new TextWatcher() {
+			@Override
+			public void onTextChanged(CharSequence s, int start, int before, int count) {
+				sendButton.setEnabled(s.length() > 0);
+			}
+
+			@Override
+			public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+			}
+
+			@Override
+			public void afterTextChanged(Editable s) {
+			}
+		});
 
 		Bundle extras = getIntent().getExtras();
 		int year = extras.getInt(EXTRAS_YEAR);
@@ -169,11 +189,9 @@ public final class CommentsActivity extends Activity implements OnSmileySelected
 		dialog.show();
 	}
 
-	public void buttonListener(View v) {
-		if (v.getId() == R.id.post_comment) {
-			if (commentInputIsValid()) {
-				postComment(getCommentInput());
-			}
+	public void sendCommentClicked(View v) {
+		if (commentInputIsValid()) {
+			postComment(getCommentInput());
 		}
 	}
 
