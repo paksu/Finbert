@@ -6,12 +6,16 @@ package paksu.finbert;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import paksu.finbert.SmileySelectionDialog.OnSmileySelectedListener;
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.text.Html;
+import android.text.Html.ImageGetter;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -33,10 +37,29 @@ public final class CommentsActivity extends Activity implements OnSmileySelected
 	private ListView commentsListView;
 	private EditText commentEditText;
 
-	private static class CommentsAdapter extends ArrayAdapter<Comment> {
+	private class CommentsAdapter extends ArrayAdapter<Comment> {
+		private final List<Smiley> smileys = Smiley.getAllSupported();
 
 		public CommentsAdapter(Context context, int textViewResourceId, List<Comment> objects) {
 			super(context, textViewResourceId, objects);
+		}
+
+		private final ImageGetter smileyImageGetter = new ImageGetter() {
+			@Override
+			public Drawable getDrawable(String source) {
+				Drawable drawable = getResources().getDrawable(Integer.parseInt(source));
+				drawable.setBounds(0, 0, drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight());
+				return drawable;
+			}
+		};
+
+		private String replaceSmileysWithImageLinks(String source) {
+			String edited = source;
+			for (Smiley smiley : smileys) {
+				edited = edited.replaceAll(Pattern.quote(smiley.getPresentation()),
+						"<img src=\"" + smiley.getDrawableId() + "\"/>");
+			}
+			return edited;
 		}
 
 		@Override
@@ -55,7 +78,8 @@ public final class CommentsActivity extends Activity implements OnSmileySelected
 			commenterTextView.setText(comment.getName());
 
 			TextView commentTextView = (TextView) commentItem.findViewById(R.id.comment);
-			commentTextView.setText(comment.getComment());
+			String formatedComment = replaceSmileysWithImageLinks(comment.getComment());
+			commentTextView.setText(Html.fromHtml(formatedComment, smileyImageGetter, null));
 			return commentItem;
 		}
 
@@ -111,7 +135,7 @@ public final class CommentsActivity extends Activity implements OnSmileySelected
 			}
 			Collections.reverse(comments);
 			((EditText) findViewById(R.id.comment_edit_text)).setText("");
-			commentsListView.setAdapter(new CommentsAdapter(getBaseContext(), 0, comments));
+			commentsListView.setAdapter(new CommentsAdapter(CommentsActivity.this, 0, comments));
 		}
 	}
 
