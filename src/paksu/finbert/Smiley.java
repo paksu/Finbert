@@ -3,8 +3,6 @@ package paksu.finbert;
 import java.util.ArrayList;
 import java.util.List;
 
-import android.content.Context;
-
 public class Smiley {
 	private static final List<Smiley> smileys = new ArrayList<Smiley>();
 
@@ -12,7 +10,7 @@ public class Smiley {
 	private final int stringId;
 	private final String presentation;
 
-	public static void initialize(Context context) {
+	static {
 		smileys.add(new Smiley(R.drawable.monkey, R.string.monkey, ":(|)"));
 		smileys.add(new Smiley(R.drawable.pig, R.string.pig, ":(:)"));
 	}
