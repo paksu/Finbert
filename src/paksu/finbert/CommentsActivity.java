@@ -131,6 +131,10 @@ public final class CommentsActivity extends Activity {
 		new GetCommentsForDateTask().execute(date);
 	}
 
+	public void smileyButtonClicked(View v) {
+		new SmileySelectionDialog(this).show();
+	}
+
 	public void buttonListener(View v) {
 		if (v.getId() == R.id.post_comment) {
 			if (commentInputIsValid()) {
