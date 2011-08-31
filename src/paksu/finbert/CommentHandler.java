@@ -1,8 +1,8 @@
 package paksu.finbert;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Type;
-import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -103,6 +103,7 @@ public class CommentHandler {
 		try {
 			HttpResponse response = httpclient.execute(request);
 			String responseBody = EntityUtils.toString(response.getEntity(), "utf-8");
+			Log.d("finbert", responseBody);
 			commentCount = gson.fromJson(responseBody, Integer.class);
 		} catch (ClientProtocolException e) {
 			e.printStackTrace();
@@ -162,11 +163,18 @@ public class CommentHandler {
 
 		try {
 			digest = MessageDigest.getInstance("MD5");
-			digest.reset();
-			String combinedArguments = date + mac;
-			digest.update(combinedArguments.getBytes());
-			String hash = new BigInteger(1, digest.digest()).toString(16);
-			return hash;
+			byte[] bytes = null;
+			try {
+				bytes = digest.digest((date + mac).getBytes("utf-8"));
+			} catch (UnsupportedEncodingException e) {
+				e.printStackTrace();
+			}
+			StringBuffer sb = new StringBuffer();
+			for (int i = 0; i < bytes.length; ++i) {
+				sb.append(Integer.toHexString((bytes[i] & 0xFF) | 0x100).substring(1, 3));
+			}
+
+			return sb.toString();
 		} catch (NoSuchAlgorithmException e) {
 			e.printStackTrace();
 		}
