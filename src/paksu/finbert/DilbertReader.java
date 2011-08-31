@@ -2,32 +2,28 @@ package paksu.finbert;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.SocketTimeoutException;
-import java.net.URL;
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.List;
 
-import org.joda.time.DateTime;
+import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.utils.URLEncodedUtils;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.protocol.BasicHttpContext;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.util.Log;
 
-public final class DilbertReader {
-	private final String defaultDilbertURL = "http://www.taloussanomat.fi/dilbert/dilbert.php?date=";
-	private DateTime dt = new DateTime();
-	private boolean nextAvailable = false;
-	private boolean previousAvailable = false;
+public class DilbertReader {
+	private final String defaultDilbertURL = "http://www.taloussanomat.fi/dilbert/dilbert.php?";
 	private static DilbertReader instance = null;
-	private final HashMap<String, Boolean> availabilityCache;
-	private final ImageCache imageCache;
-	private final int timeOutDelay = 30 * 1000; // 30 seconds
-
-	protected DilbertReader() {
-		availabilityCache = new HashMap<String, Boolean>();
-		imageCache = new ImageCache();
-	}
+	private final ImageCache imageCache = ImageCache.getInstance();
+	private final HttpClient httpclient = HttpClientFactory.getClient();
+	private final int httpRequestIsSuccessful = 200; // HTTP/1.1 200 OK
 
 	public static DilbertReader getInstance() {
 		if (instance == null) {
@@ -37,165 +33,79 @@ public final class DilbertReader {
 		return instance;
 	}
 
-	public boolean hasCurrentCached() {
-		return imageCache.get(getCurrentDate()) != null;
+	public boolean isCachedForDate(DilbertDate date) {
+		return imageCache.get(date) != null;
 	}
 
-	public Bitmap readCurrent() {
-		Bitmap picture = null;
-		URL dilbertUrl;
-		String date = getCurrentDate();
+	public Bitmap downloadFinbertForDate(DilbertDate date) throws NetworkException {
+		Bitmap picture = BitmapFactory.decodeByteArray(new byte[0], 0, 0);
+		Log.d("finbert", "Downloading image for date:" + date.toString());
 
-		if (imageCache.imageIsCachedFor(date)) {
-			picture = imageCache.get(date);
-		} else {
-			Log.d("finbert", "Downloading image for date:" + date);
+		String dilbertURL = defaultDilbertURL;
+		String dateString = date.getYear() + "-" + date.getMonth() + "-" + date.getDay();
 
-			try {
-				dilbertUrl = new URL(defaultDilbertURL + date);
-			} catch (MalformedURLException e) {
-				e.printStackTrace();
-				throw new RuntimeException(e);
-			}
+		List<NameValuePair> requestParameters = new ArrayList<NameValuePair>();
+		requestParameters.add(new BasicNameValuePair("date", dateString));
 
-			try {
-				HttpURLConnection conn = (HttpURLConnection) dilbertUrl
-						.openConnection();
-				conn.setDoInput(true);
-				conn.connect();
-				conn.setConnectTimeout(timeOutDelay);
-				InputStream is = conn.getInputStream();
+		dilbertURL += URLEncodedUtils.format(requestParameters, "utf-8");
+		HttpGet request = new HttpGet(dilbertURL);
+		HttpResponse response = null;
+		InputStream is = null;
+		try {
+			response = httpclient.execute(request, new BasicHttpContext());
+			if (response.getStatusLine().getStatusCode() == httpRequestIsSuccessful) {
+				is = response.getEntity().getContent();
 				picture = BitmapFactory.decodeStream(is);
 				imageCache.set(date, picture);
-				availabilityCache.put(date, true);
-				Log.d("finbert", "Downloaded and cached image for date:" + date);
-			} catch (SocketTimeoutException e) {
-				// TODO
-				e.printStackTrace();
+			} else {
+				throw new NetworkException("Download failed: " + date + " " +
+						response.getStatusLine().getReasonPhrase());
+			}
+		} catch (ClientProtocolException e) {
+			e.printStackTrace();
+			throw new NetworkException(e);
+		} catch (IOException e) {
+			e.printStackTrace();
+			throw new NetworkException(e);
+		} finally {
+			try {
+				if (is != null) {
+					is.close();
+				}
 			} catch (IOException e) {
 				e.printStackTrace();
-				throw new RuntimeException(e);
 			}
+
 		}
-
-		checkAvailability();
-
+		Log.d("finbert", "Downloaded");
 		return picture;
 	}
 
-	private void checkAvailability() {
-		Log.d("finbert", "Checking availability");
-		if (isDilbertAvailable(peekNextDate())) {
-			Log.d("finbert", "Next day is available");
-			setNextAvailable(true);
-		} else {
-			Log.d("finbert", "Next day is not available");
-			setNextAvailable(false);
-		}
+	public boolean isDilbertAvailableForDate(DilbertDate date) {
 
-		if (isDilbertAvailable(peekPreviousDate())) {
-			Log.d("finbert", "Previous day is available");
-			setPreviousAvailable(true);
-		} else {
-			Log.d("finbert", "Previous day is not available");
-			setPreviousAvailable(false);
-		}
+		boolean isAvailable = false;
 
-	}
+		String dilbertURL = defaultDilbertURL;
+		String dateString = date.getYear() + "-" + date.getMonth() + "-" + date.getDay();
 
-	public void previousDay() {
-		dt = dt.minusDays(1);
-	}
+		List<NameValuePair> requestParameters = new ArrayList<NameValuePair>();
+		requestParameters.add(new BasicNameValuePair("date", dateString));
 
-	public void nextDay() {
-		dt = dt.plusDays(1);
-		if (dt.getDayOfWeek() > 5) {
-			while (dt.getDayOfWeek() != 1) {
-				dt = dt.plusDays(1);
+		dilbertURL += URLEncodedUtils.format(requestParameters, "utf-8");
+
+		HttpGet request = new HttpGet(dilbertURL);
+		HttpResponse response;
+
+		try {
+			response = httpclient.execute(request, new BasicHttpContext());
+			if (response.getStatusLine().getStatusCode() == httpRequestIsSuccessful) {
+				isAvailable = true;
 			}
+		} catch (ClientProtocolException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
-	}
-
-	public String getCurrentDate() {
-		while (dt.getDayOfWeek() > 5) {
-			dt = dt.minusDays(1);
-		}
-		Log.d("finbert",
-				"Current date:" + Integer.toString(dt.getYear()) + "-"
-						+ Integer.toString(dt.getMonthOfYear()) + "-"
-						+ Integer.toString(dt.getDayOfMonth()));
-		return Integer.toString(dt.getYear()) + "-"
-				+ Integer.toString(dt.getMonthOfYear()) + "-"
-				+ Integer.toString(dt.getDayOfMonth());
-	}
-
-	private String peekNextDate() {
-		DateTime nextDay = dt;
-		nextDay = nextDay.plusDays(1);
-		if (nextDay.getDayOfWeek() > 5) {
-			while (nextDay.getDayOfWeek() != 1) {
-				nextDay = nextDay.plusDays(1);
-			}
-		}
-		return Integer.toString(nextDay.getYear()) + "-"
-				+ Integer.toString(nextDay.getMonthOfYear()) + "-"
-				+ Integer.toString(nextDay.getDayOfMonth());
-	}
-
-	private String peekPreviousDate() {
-		DateTime previousDay = dt;
-		previousDay = previousDay.minusDays(1);
-		while (previousDay.getDayOfWeek() > 5) {
-			previousDay = previousDay.minusDays(1);
-		}
-		return Integer.toString(previousDay.getYear()) + "-"
-				+ Integer.toString(previousDay.getMonthOfYear()) + "-"
-				+ Integer.toString(previousDay.getDayOfMonth());
-	}
-
-	private boolean isDilbertAvailable(String dateString) {
-		URL dilbertUrl;
-
-		if (availabilityCache.containsKey(dateString)) {
-			boolean cached = availabilityCache.get(dateString);
-			Log.d("finbert", "isDilbertAvailable found cached value for date:"
-					+ dateString);
-			return cached;
-		} else {
-			Log.d("finbert", "isDilbertAvailable polling date:" + dateString);
-			try {
-				dilbertUrl = new URL(defaultDilbertURL + dateString);
-			} catch (MalformedURLException e) {
-				return false;
-			}
-
-			try {
-				HttpURLConnection conn = (HttpURLConnection) dilbertUrl.openConnection();
-				conn.setDoInput(true);
-				conn.connect();
-				conn.getInputStream();
-				availabilityCache.put(dateString, true);
-			} catch (IOException e) {
-				availabilityCache.put(dateString, false);
-				return false;
-			}
-		}
-		return true;
-	}
-
-	public boolean isNextAvailable() {
-		return nextAvailable;
-	}
-
-	public void setNextAvailable(boolean isNextAvailable) {
-		nextAvailable = isNextAvailable;
-	}
-
-	public boolean isPreviousAvailable() {
-		return previousAvailable;
-	}
-
-	public void setPreviousAvailable(boolean isPreviousAvailable) {
-		previousAvailable = isPreviousAvailable;
+		return isAvailable;
 	}
 }

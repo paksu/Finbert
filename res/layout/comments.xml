@@ -23,12 +23,13 @@
 		android:layout_height="wrap_content"
 		android:layout_weight="0"
 		android:orientation="horizontal"
-		android:background="@drawable/top_bar_background"
+		android:background="@drawable/bar"
 		android:paddingTop="3dp">
 		<Button
-			android:id="@+id/add_smiley_button"
+			android:id="@+id/add_smiley"
 			android:layout_width="wrap_content"
 			android:layout_height="fill_parent"
+			android:onClick="smileyButtonClicked"
 			android:text="Smiley"></Button>
 		<EditText
 			android:id="@+id/comment_edit_text"
@@ -37,9 +38,10 @@
 			android:layout_weight="2">
 		</EditText>
 		<Button
-			android:id="@+id/post_comment_button"
+			android:id="@+id/post_comment"
 			android:layout_width="wrap_content"
 			android:layout_height="fill_parent"
+			android:onClick="buttonListener"
 			android:text="Send"></Button>
 	</LinearLayout>
 </LinearLayout>
