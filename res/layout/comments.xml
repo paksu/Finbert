@@ -11,9 +11,9 @@
 		android:layout_weight="2"
 		android:dividerHeight="0dp"
 		android:divider="#ffffff"
-		android:background="#ffffff"
-		android:listSelector="#ffffff"
-		android:cacheColorHint="#ffffff"
+		android:listSelector="@android:color/transparent"
+		android:cacheColorHint="#e4edf1"
+		android:background="#e4edf1"
 		android:choiceMode="none"
 		android:transcriptMode="alwaysScroll"
 		android:stackFromBottom="true"></ListView>

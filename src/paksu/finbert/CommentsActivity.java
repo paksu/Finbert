@@ -11,6 +11,7 @@ import java.util.regex.Pattern;
 import paksu.finbert.SmileySelectionDialog.OnSmileySelectedListener;
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.PixelFormat;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -68,9 +69,11 @@ public final class CommentsActivity extends Activity implements OnSmileySelected
 
 			View commentLayout = commentItem.findViewById(R.id.comment_layout);
 			if (position % 2 == 0) {
-				commentLayout.setBackgroundDrawable(getContext().getResources().getDrawable(R.drawable.bubble_right));
+				commentLayout.setBackgroundDrawable(getContext().getResources().getDrawable(
+						R.drawable.bubble_right_with_shadow));
 			} else {
-				commentLayout.setBackgroundDrawable(getContext().getResources().getDrawable(R.drawable.bubble_left));
+				commentLayout.setBackgroundDrawable(getContext().getResources().getDrawable(
+						R.drawable.bubble_left_with_shadow));
 			}
 
 			Comment comment = getItem(position);
@@ -225,5 +228,11 @@ public final class CommentsActivity extends Activity implements OnSmileySelected
 		String inputWithAppendedSmiley = smileyAppendingBuilder.toString();
 		commentEditText.setText(inputWithAppendedSmiley);
 		commentEditText.setSelection(inputWithAppendedSmiley.length() - 1);
+	}
+
+	@Override
+	public void onAttachedToWindow() {
+		super.onAttachedToWindow();
+		getWindow().setFormat(PixelFormat.RGBA_8888);
 	}
 }
