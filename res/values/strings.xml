@@ -8,4 +8,5 @@
     <string name="monkey">Monkey</string>
     <string name="pig">Pig</string>
     <string name="dogbert">Dogbert</string>
+    <string name="pacman">Pacman</string>
 </resources>
