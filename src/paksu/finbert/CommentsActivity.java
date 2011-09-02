@@ -33,6 +33,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 /**
  *
@@ -111,6 +112,7 @@ public final class CommentsActivity extends Activity implements OnSmileySelected
 		protected void onPostExecute(Boolean wasInsertSuccessful) {
 			// TODO: messua käyttäjälle ?
 			if (wasInsertSuccessful) {
+				commentHandler.updateCommentCooldown();
 				Log.d("finbert", "Great success");
 			} else {
 				Log.d("finbert", "Epic fail");
@@ -215,6 +217,8 @@ public final class CommentsActivity extends Activity implements OnSmileySelected
 					dialog.dismiss();
 				}
 			}).show();
+		} else if (commentHandler.commentsStillOnCooldown()) {
+			Toast.makeText(this, getString(R.string.cooldown_alert), Toast.LENGTH_SHORT).show();
 		} else if (commentInputIsValid()) {
 			postComment(nickname(), getCommentInput());
 		}

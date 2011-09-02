@@ -20,5 +20,6 @@
     <string name="settings">Asetukset</string>
     <string name="says">sanoo:</string>
     <string name="send">Lähetä</string>
+    <string name="cooldown_alert">Ethän floodaa</string>
 </resources>
 

@@ -31,9 +31,9 @@ public class CommentHandler {
 	private final Gson gson = new Gson();
 	private final HttpClient httpclient = HttpClientFactory.getClient();
 	private static CommentHandler instance;
-	private final long commentCooldownPeriod = 30 * 1000; // 60 Seconds
+	private final long commentCooldownPeriod = 30 * 1000; // 30 Seconds
 	private final List<Long> lastCommentTimes = new ArrayList<Long>();
-	private final int commentCooldownLimit = 4;
+	private final int commentCooldownLimit = 2;
 
 	protected CommentHandler() {
 
@@ -194,7 +194,7 @@ public class CommentHandler {
 		Log.d("finbert", "After sorting: " + lastCommentTimes.toString());
 	}
 
-	public boolean isCommentCooldownOver() {
+	public boolean commentsStillOnCooldown() {
 		int commentsStillOnCooldown = 0;
 		long now = SystemClock.elapsedRealtime();
 		for (long commentTime : lastCommentTimes) {
@@ -205,10 +205,10 @@ public class CommentHandler {
 		}
 		if (commentsStillOnCooldown < commentCooldownLimit) {
 			Log.d("finbert", "No Comment cooldown");
-			return true;
+			return false;
 		} else {
 			Log.d("finbert", commentCooldownLimit + " Comments still on cooldown");
-			return false;
+			return true;
 		}
 	}
 }
