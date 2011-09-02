@@ -19,5 +19,6 @@
     <string name="go_to_settings_and_set_nickname">Mene Asetuksiin ja valitse lempinimi, ennen kuin voit lähettää kommentteja.</string>
     <string name="settings">Asetukset</string>
     <string name="says">sanoo:</string>
+    <string name="send">Lähetä</string>
 </resources>
 

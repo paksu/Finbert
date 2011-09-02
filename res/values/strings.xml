@@ -19,4 +19,5 @@
     <string name="go_to_settings_and_set_nickname">Go to Settings and set nickname before posting.</string>
     <string name="settings">Settings</string>
     <string name="says">says:</string>
+    <string name="send">Send</string>
 </resources>
