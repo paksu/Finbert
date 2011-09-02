@@ -10,11 +10,16 @@ import java.util.regex.Pattern;
 
 import paksu.finbert.SmileySelectionDialog.OnSmileySelectedListener;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.DialogInterface.OnClickListener;
+import android.content.Intent;
 import android.graphics.PixelFormat;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.text.Editable;
 import android.text.Html;
 import android.text.Html.ImageGetter;
@@ -193,9 +198,30 @@ public final class CommentsActivity extends Activity implements OnSmileySelected
 	}
 
 	public void sendCommentClicked(View v) {
-		if (commentInputIsValid()) {
-			postComment(getCommentInput());
+		if (nickname() == "") {
+			AlertDialog.Builder builder = new AlertDialog.Builder(this);
+			builder.setTitle(R.string.nickname_not_set);
+			builder.setMessage(R.string.go_to_settings_and_set_nickname);
+			builder.setPositiveButton(R.string.settings, new OnClickListener() {
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					startActivity(new Intent(CommentsActivity.this, FinbertPreferences.class));
+					dialog.dismiss();
+				}
+			});
+			builder.setNegativeButton(R.string.cancel, new OnClickListener() {
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					dialog.dismiss();
+				}
+			}).show();
+		} else if (commentInputIsValid()) {
+			postComment(nickname(), getCommentInput());
 		}
+	}
+
+	private String nickname() {
+		return PreferenceManager.getDefaultSharedPreferences(this).getString("nickname", "");
 	}
 
 	private boolean commentInputIsValid() {
@@ -207,10 +233,9 @@ public final class CommentsActivity extends Activity implements OnSmileySelected
 		return commentEditText.getText().toString();
 	}
 
-	private void postComment(String text) {
-		String name = "daddari";
+	private void postComment(String user, String text) {
 		String date = this.date.toString();
-		Comment comment = new Comment(text, name, date);
+		Comment comment = new Comment(text, user, date);
 		new PostNewCommentForDateDateTask().execute(comment);
 	}
 
