@@ -108,4 +108,15 @@ public class DilbertReader {
 		}
 		return isAvailable;
 	}
+	
+	public String getUrlToDilbertForDate(DilbertDate date) {
+		String dilbertURL = defaultDilbertURL;
+		String dateString = date.getYear() + "-" + date.getMonth() + "-" + date.getDay();
+		List<NameValuePair> requestParameters = new ArrayList<NameValuePair>();
+		requestParameters.add(new BasicNameValuePair("date", dateString));
+
+		dilbertURL += URLEncodedUtils.format(requestParameters, "utf-8");
+		
+		return dilbertURL;
+	}
 }

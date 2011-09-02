@@ -321,7 +321,7 @@ public final class StripBrowserActivity extends Activity implements ViewFactory 
 			Intent intent = new Intent(Intent.ACTION_SEND);
 			intent.setType("text/plain");
 			intent.putExtra(Intent.EXTRA_TITLE, "finbert");
-			intent.putExtra(Intent.EXTRA_TEXT, "i luv finbert");
+			intent.putExtra(Intent.EXTRA_TEXT, dilbertReader.getUrlToDilbertForDate(selectedDate));
 			startActivity(intent);
 		}
 
