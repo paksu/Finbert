@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Finbert</string>
+    <string name="share">jaa:</string>
+    <string name="comments">kommentaatit:</string>
+    <string name="click_to_comment">klikkaa kommentoidaksesi</string>
+    <string name="select_smiley">Valitse hymiö</string>
+    <string name="monkey">Apina</string>
+    <string name="pig">Sika</string>
+    <string name="dogbert">Dogbert</string>
+    <string name="pacman">Lintu</string>
+    <string name="catbert">Catbert</string>
+    <string name="nickname">Lempinimi</string>
+    <string name="toilet">Vessa</string>
+    <string name="nickname_not_set">Lempinimeä ei ole valittu</string>
+    <string name="invalid_nickname">Invalidi lempinimi</string>
+    <string name="nickname_required">Lempinimi puuttuu</string>
+    <string name="cancel">Takaisin</string>
+    <string name="go_to_settings_and_set_nickname">Mene Asetuksiin ja valitse lempinimi, ennen kuin voit lähettää kommentaatteja.</string>
+    <string name="settings">Asetukset</string>
+    <string name="says">sanoo:</string>
+    <string name="send">Lähetä</string>
+</resources>
+

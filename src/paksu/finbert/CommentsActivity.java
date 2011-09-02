@@ -185,8 +185,8 @@ public final class CommentsActivity extends Activity implements OnSmileySelected
 		int month = extras.getInt(EXTRAS_MONTH);
 		int day = extras.getInt(EXTRAS_DAY);
 		date = DilbertDate.exactlyForDate(year, month, day);
-
-		setTitle("Finbert - comments - " + date);
+		String commentsString = getString(R.string.comments);
+		setTitle("Finbert - " + commentsString.substring(0, commentsString.length() - 1) + " - " + date);
 
 		new GetCommentsForDateTask().execute(date);
 	}

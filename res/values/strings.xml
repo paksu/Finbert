@@ -9,11 +9,15 @@
     <string name="pig">Pig</string>
     <string name="dogbert">Dogbert</string>
     <string name="pacman">Pacman</string>
+    <string name="catbert">Catbert</string>
     <string name="nickname">Nickname</string>
+    <string name="toilet">Toilet</string>
     <string name="nickname_not_set">Nickname not set</string>
     <string name="invalid_nickname">Invalid nickname</string>
     <string name="nickname_required">Nickname required</string>
     <string name="cancel">Cancel</string>
     <string name="go_to_settings_and_set_nickname">Go to Settings and set nickname before posting.</string>
     <string name="settings">Settings</string>
+    <string name="says">says:</string>
+    <string name="send">Send</string>
 </resources>
