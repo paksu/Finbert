@@ -25,12 +25,12 @@
 		android:orientation="horizontal"
 		android:background="@drawable/bar"
 		android:paddingTop="3dp">
-		<Button
+		<ImageButton
 			android:id="@+id/add_smiley"
 			android:layout_width="wrap_content"
 			android:layout_height="fill_parent"
 			android:onClick="smileyButtonClicked"
-			android:text="Smiley"></Button>
+			android:src="@drawable/smiley_button_image"></ImageButton>
 		<EditText
 			android:id="@+id/comment_edit_text"
 			android:layout_width="fill_parent"

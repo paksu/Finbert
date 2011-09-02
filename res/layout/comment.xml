@@ -12,12 +12,24 @@
 		android:layout_width="fill_parent"
 		android:layout_height="wrap_content"
 		android:orientation="vertical">
-		<TextView
-			android:id="@+id/commenter"
-			android:layout_width="fill_parent"
+		<LinearLayout
 			android:layout_height="wrap_content"
-			android:textColor="#ff0000"
-			android:textSize="16dp"></TextView>
+			android:layout_width="fill_parent"
+			android:orientation="horizontal">
+			<TextView
+				android:id="@+id/commenter"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:textColor="#ff0000"
+				android:textSize="16dp"></TextView>
+			<TextView
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:textColor="#000000"
+				android:textSize="16dp"
+				android:text="@string/says"
+				android:layout_marginLeft="5dp"></TextView>
+		</LinearLayout>
 		<TextView
 			android:id="@+id/comment"
 			android:layout_width="fill_parent"
