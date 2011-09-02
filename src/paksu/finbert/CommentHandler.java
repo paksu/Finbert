@@ -6,6 +6,7 @@ import java.lang.reflect.Type;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.http.HttpResponse;
@@ -16,6 +17,7 @@ import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.util.EntityUtils;
 
 import android.net.Uri;
+import android.os.SystemClock;
 import android.util.Log;
 
 import com.google.gson.Gson;
@@ -29,6 +31,9 @@ public class CommentHandler {
 	private final Gson gson = new Gson();
 	private final HttpClient httpclient = HttpClientFactory.getClient();
 	private static CommentHandler instance;
+	private final long commentCooldownPeriod = 30 * 1000; // 60 Seconds
+	private final List<Long> lastCommentTimes = new ArrayList<Long>();
+	private final int commentCooldownLimit = 4;
 
 	protected CommentHandler() {
 
@@ -71,7 +76,6 @@ public class CommentHandler {
 			e.printStackTrace();
 			throw new NetworkException(e);
 		}
-
 		return isSuccess;
 	}
 
@@ -179,5 +183,32 @@ public class CommentHandler {
 			e.printStackTrace();
 		}
 		return "";
+	}
+
+	public synchronized void updateCommentCooldown() {
+		lastCommentTimes.add(SystemClock.elapsedRealtime());
+		if (lastCommentTimes.size() > commentCooldownLimit) {
+			Collections.sort(lastCommentTimes, Collections.reverseOrder());
+			lastCommentTimes.remove(lastCommentTimes.size() - 1);
+		}
+		Log.d("finbert", "After sorting: " + lastCommentTimes.toString());
+	}
+
+	public boolean isCommentCooldownOver() {
+		int commentsStillOnCooldown = 0;
+		long now = SystemClock.elapsedRealtime();
+		for (long commentTime : lastCommentTimes) {
+			if (now - commentTime < commentCooldownPeriod) {
+				Log.d("finbert", "Cooldown left: " + Long.toString(now - commentTime) + " ms");
+				++commentsStillOnCooldown;
+			}
+		}
+		if (commentsStillOnCooldown < commentCooldownLimit) {
+			Log.d("finbert", "No Comment cooldown");
+			return true;
+		} else {
+			Log.d("finbert", commentCooldownLimit + " Comments still on cooldown");
+			return false;
+		}
 	}
 }
