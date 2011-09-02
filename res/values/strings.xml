@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Finbert</string>
-    <string name="share">share:</string>
+    <string name="share">Share</string>
     <string name="comments">comments:</string>
     <string name="click_to_comment">click to comment</string>
     <string name="select_smiley">Select smiley</string>

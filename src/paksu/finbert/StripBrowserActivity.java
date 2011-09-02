@@ -167,7 +167,6 @@ public final class StripBrowserActivity extends Activity implements ViewFactory 
 
 	private void setFonts() {
 		Typeface customTypeFace = Typeface.createFromAsset(getAssets(), "default_font.ttf");
-		((TextView) findViewById(R.id.share_text)).setTypeface(customTypeFace);
 		((TextView) findViewById(R.id.click_to_comment)).setTypeface(customTypeFace);
 		((TextView) findViewById(R.id.comments)).setTypeface(customTypeFace);
 		((TextView) findViewById(R.id.comments_count)).setTypeface(customTypeFace);
@@ -318,6 +317,12 @@ public final class StripBrowserActivity extends Activity implements ViewFactory 
 	public boolean onMenuItemSelected(int featureId, MenuItem item) {
 		if (item.getItemId() == R.id.settings) {
 			startActivity(new Intent(this, FinbertPreferences.class));
+		} else if (item.getItemId() == R.id.share) {
+			Intent intent = new Intent(Intent.ACTION_SEND);
+			intent.setType("text/plain");
+			intent.putExtra(Intent.EXTRA_TITLE, "finbert");
+			intent.putExtra(Intent.EXTRA_TEXT, "i luv finbert");
+			startActivity(intent);
 		}
 
 		return true;
