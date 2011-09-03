@@ -21,5 +21,7 @@
     <string name="says">sanoo:</string>
     <string name="send">Lähetä</string>
     <string name="cooldown_alert">Ethän floodaa</string>
+    <string name="voice_command_not_recognized">Ääni-commandia ei tunnistettu</string>
+    <string name="is_not_a_finbert_command">ei ole Finbert Ääni-command</string>
 </resources>
 

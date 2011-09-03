@@ -21,4 +21,6 @@
     <string name="says">says:</string>
     <string name="send">Send</string>
     <string name="cooldown_alert">Please do not spam good sir</string>
+    <string name="voice_command_not_recognized">Voice command not recognized</string>
+    <string name="is_not_a_finbert_command">is not a Finbert voice command</string>
 </resources>

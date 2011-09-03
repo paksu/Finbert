@@ -10,12 +10,14 @@ import paksu.finbert.DilbertImageSwitcher.Direction;
 import paksu.finbert.DilbertImageSwitcher.OnFlingListener;
 import android.app.Activity;
 import android.content.Intent;
+import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
 import android.graphics.Typeface;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.speech.RecognizerIntent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -24,11 +26,14 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.ImageView.ScaleType;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.ViewSwitcher.ViewFactory;
 
 import com.google.gson.JsonParseException;
 
 public final class StripBrowserActivity extends Activity implements ViewFactory {
+	private static final int VOICE_RECOGNITION_REQUEST_CODE = 1534;
+	private final static String[] finbertMatches = { "finger", "fingers", "singer", "dover", "hoover" };
 	private DilbertImageSwitcher imageSwitcher;
 	private ImageView nextButton;
 	private ImageView prevButton;
@@ -153,6 +158,13 @@ public final class StripBrowserActivity extends Activity implements ViewFactory 
 		nextButton = (ImageView) findViewById(R.id.next);
 		prevButton = (ImageView) findViewById(R.id.previous);
 
+		ImageView voiceButton = (ImageView) findViewById(R.id.voice);
+		List<ResolveInfo> voiceActivities = getPackageManager().queryIntentActivities(
+				new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH), 0);
+		if (voiceActivities.size() == 0) {
+			voiceButton.setEnabled(false);
+		}
+
 		commentCount = (TextView) findViewById(R.id.comments_count);
 
 		availabilityCache.put(DilbertDate.newest().next(), false);
@@ -173,6 +185,10 @@ public final class StripBrowserActivity extends Activity implements ViewFactory 
 	}
 
 	public void buttonListener(View v) {
+		if (v.getId() == R.id.voice) {
+			doVoiceRecognition();
+			return;
+		}
 		if (v.getId() == R.id.comments_bubble) {
 			launchCommentsActivityForCurrentDate();
 			return;
@@ -296,6 +312,54 @@ public final class StripBrowserActivity extends Activity implements ViewFactory 
 		startActivity(intent);
 	}
 
+	private void doVoiceRecognition() {
+		Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+		intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+		intent.putExtra(RecognizerIntent.EXTRA_PROMPT, "Finbert Voice Recognition");
+		startActivityForResult(intent, VOICE_RECOGNITION_REQUEST_CODE);
+	}
+
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		if (requestCode == VOICE_RECOGNITION_REQUEST_CODE && resultCode == RESULT_OK) {
+			ArrayList<String> matches = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
+			if (matchesContainsCommand(matches, "left", "previous", "vasen", "edellinen")) {
+				DilbertDate previous = selectedDate.previous();
+				if (availabilityCache.containsKey(previous) && availabilityCache.get(previous) == true) {
+					changeToNextDay();
+				}
+			} else if (matchesContainsCommand(matches, "right", "next", "oikea", "seuraava")) {
+				DilbertDate next = selectedDate.next();
+				if (availabilityCache.containsKey(next) && availabilityCache.get(next) == true) {
+					changeToNextDay();
+				}
+			} else if (matchesContainsCommand(matches, "comments", "kommentit")) {
+				launchCommentsActivityForCurrentDate();
+			} else if (matchesContainsCommand(matches, "share", "send", "kommentit")) {
+				startActionSendIntent();
+			} else {
+				if (matches.size() > 0) {
+					Toast.makeText(this, matches.get(0) + " " + getString(R.string.is_not_a_finbert_command),
+							Toast.LENGTH_SHORT).show();
+				} else {
+					Toast.makeText(this, getString(R.string.voice_command_not_recognized), Toast.LENGTH_SHORT).show();
+				}
+			}
+		}
+	}
+
+	private static boolean matchesContainsCommand(List<String> matches, String... commands) {
+		for (String command : commands) {
+			for (String prefixMatch : finbertMatches) {
+				if (matches.contains(prefixMatch + " " + command)) {
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
+
 	/**
 	 * Generates views for {@link DilbertImageSwitcher}
 	 */
@@ -318,13 +382,17 @@ public final class StripBrowserActivity extends Activity implements ViewFactory 
 		if (item.getItemId() == R.id.settings) {
 			startActivity(new Intent(this, FinbertPreferences.class));
 		} else if (item.getItemId() == R.id.share) {
-			Intent intent = new Intent(Intent.ACTION_SEND);
-			intent.setType("text/plain");
-			intent.putExtra(Intent.EXTRA_TITLE, "finbert");
-			intent.putExtra(Intent.EXTRA_TEXT, dilbertReader.getUrlToDilbertForDate(selectedDate));
-			startActivity(intent);
+			startActionSendIntent();
 		}
 
 		return true;
+	}
+
+	private void startActionSendIntent() {
+		Intent intent = new Intent(Intent.ACTION_SEND);
+		intent.setType("text/plain");
+		intent.putExtra(Intent.EXTRA_TITLE, "finbert");
+		intent.putExtra(Intent.EXTRA_TEXT, dilbertReader.getUrlToDilbertForDate(selectedDate));
+		startActivity(intent);
 	}
 }
