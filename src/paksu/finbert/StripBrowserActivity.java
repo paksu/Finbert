@@ -326,7 +326,7 @@ public final class StripBrowserActivity extends Activity implements ViewFactory 
 			if (matchesContainsCommand(matches, "left", "previous", "vasen", "edellinen")) {
 				DilbertDate previous = selectedDate.previous();
 				if (availabilityCache.containsKey(previous) && availabilityCache.get(previous) == true) {
-					changeToNextDay();
+					changeToPreviousDay();
 				}
 			} else if (matchesContainsCommand(matches, "right", "next", "oikea", "seuraava")) {
 				DilbertDate next = selectedDate.next();
