@@ -33,7 +33,7 @@ import com.google.gson.JsonParseException;
 
 public final class StripBrowserActivity extends Activity implements ViewFactory {
 	private static final int VOICE_RECOGNITION_REQUEST_CODE = 1534;
-	private final static String[] finbertMatches = { "finger", "fingers", "singer", "dover", "hoover" };
+	private final static String[] finbertMatches = { "finger", "fingers", "singer", "dover", "hoover", "denver" };
 	private DilbertImageSwitcher imageSwitcher;
 	private ImageView nextButton;
 	private ImageView prevButton;
