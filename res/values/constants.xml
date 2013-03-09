@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <item name="strip_aspect_ratio" format="float" type="fraction">3.2</item>
+
+</resources>
