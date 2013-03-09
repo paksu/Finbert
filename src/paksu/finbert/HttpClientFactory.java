@@ -18,42 +18,42 @@ import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
 
 public final class HttpClientFactory {
-	private static final int CONNECTION_TIMEOUT_DELAY = 10 * 1000; // 10 seconds
-	private static final int SOCKET_TIMEOUT_DELAY = 5 * 1000; // 5 seconds
-	private static final int MAX_CONNECTIONS_PER_ROUTE = 20;
+    private static final int CONNECTION_TIMEOUT_DELAY = 10 * 1000; // 10 seconds
+    private static final int SOCKET_TIMEOUT_DELAY = 5 * 1000; // 5 seconds
+    private static final int MAX_CONNECTIONS_PER_ROUTE = 20;
 
-	private static HttpClient client;
+    private static HttpClient client;
 
-	public static HttpClient getClient() {
-		if (client == null) {
-			SchemeRegistry schemeRegistry = new SchemeRegistry();
-			schemeRegistry.register(new Scheme("http", PlainSocketFactory.getSocketFactory(), 80));
-			schemeRegistry.register(new Scheme("https", SSLSocketFactory.getSocketFactory(), 443));
+    public static HttpClient getClient() {
+        if (client == null) {
+            SchemeRegistry schemeRegistry = new SchemeRegistry();
+            schemeRegistry.register(new Scheme("http", PlainSocketFactory.getSocketFactory(), 80));
+            schemeRegistry.register(new Scheme("https", SSLSocketFactory.getSocketFactory(), 443));
 
-			HttpParams params = new BasicHttpParams();
-			params.setParameter(CoreProtocolPNames.PROTOCOL_VERSION, HttpVersion.HTTP_1_1);
+            HttpParams params = new BasicHttpParams();
+            params.setParameter(CoreProtocolPNames.PROTOCOL_VERSION, HttpVersion.HTTP_1_1);
 
-			HttpClientParams.setRedirecting(params, false);
+            HttpClientParams.setRedirecting(params, false);
 
-			HttpConnectionParams.setStaleCheckingEnabled(params, false);
-			HttpConnectionParams.setSocketBufferSize(params, 8192);
-			HttpConnectionParams.setConnectionTimeout(params, CONNECTION_TIMEOUT_DELAY);
-			HttpConnectionParams.setSoTimeout(params, SOCKET_TIMEOUT_DELAY);
+            HttpConnectionParams.setStaleCheckingEnabled(params, false);
+            HttpConnectionParams.setSocketBufferSize(params, 8192);
+            HttpConnectionParams.setConnectionTimeout(params, CONNECTION_TIMEOUT_DELAY);
+            HttpConnectionParams.setSoTimeout(params, SOCKET_TIMEOUT_DELAY);
 
-			ConnManagerParams.setTimeout(params, CONNECTION_TIMEOUT_DELAY);
-			ConnManagerParams.setMaxTotalConnections(params, 100);
-			ConnManagerParams.setMaxConnectionsPerRoute(params, new ConnPerRoute() {
+            ConnManagerParams.setTimeout(params, CONNECTION_TIMEOUT_DELAY);
+            ConnManagerParams.setMaxTotalConnections(params, 100);
+            ConnManagerParams.setMaxConnectionsPerRoute(params, new ConnPerRoute() {
 
-				@Override
-				public int getMaxForRoute(HttpRoute route) {
-					return MAX_CONNECTIONS_PER_ROUTE;
-				}
-			});
+                @Override
+                public int getMaxForRoute(HttpRoute route) {
+                    return MAX_CONNECTIONS_PER_ROUTE;
+                }
+            });
 
-			ThreadSafeClientConnManager manager = new ThreadSafeClientConnManager(params, schemeRegistry);
-			client = new DefaultHttpClient(manager, params);
-		}
+            ThreadSafeClientConnManager manager = new ThreadSafeClientConnManager(params, schemeRegistry);
+            client = new DefaultHttpClient(manager, params);
+        }
 
-		return client;
-	}
+        return client;
+    }
 }

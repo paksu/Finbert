@@ -8,19 +8,18 @@ import android.os.Bundle;
 
 public class StripFragment extends Fragment {
 
-	private ImageLoader loader;
+    private ImageLoader loader;
 
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
 
-	@Override
-	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
+        BitmapCache cache = ((FinbertApplication) getActivity().getApplication()).getDefaultBitmapCache();
+        loader = new ImageLoader(cache);
+    }
 
-		BitmapCache cache = ((FinbertApplication) getActivity().getApplication()).getDefaultBitmapCache();
-		loader = new ImageLoader(cache);
-	}
-
-	protected ImageLoader getImageLoader() {
-		return loader;
-	}
+    protected ImageLoader getImageLoader() {
+        return loader;
+    }
 
 }

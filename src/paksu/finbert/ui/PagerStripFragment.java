@@ -15,46 +15,46 @@ import android.widget.TextView;
 
 public class PagerStripFragment extends StripFragment {
 
-	private StripAdapter adapter;
+    private StripAdapter adapter;
 
-	@Override
-	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		adapter = new StripAdapter();
-	}
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        adapter = new StripAdapter();
+    }
 
-	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		ViewPager pager = new ViewPager(getActivity());
-		pager.setAdapter(adapter);
-		return pager;
-	}
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        ViewPager pager = new ViewPager(getActivity());
+        pager.setAdapter(adapter);
+        return pager;
+    }
 
-	private class StripAdapter extends PagerAdapter {
+    private class StripAdapter extends PagerAdapter {
 
-		@Override
-		public int getCount() {
-			return 10;
-		}
+        @Override
+        public int getCount() {
+            return 10;
+        }
 
-		@Override
-		public boolean isViewFromObject(View view, Object object) {
-			return view == object;
-		}
+        @Override
+        public boolean isViewFromObject(View view, Object object) {
+            return view == object;
+        }
 
-		@Override
-		public Object instantiateItem(ViewGroup container, int position) {
-			View v = LayoutInflater.from(getActivity()).inflate(R.layout.strip_list_item, null);
-			getImageLoader().loadImage((ImageView) v.findViewById(R.id.image), StripUtils.urlForDate(DateTime.now()));
-			((TextView) v.findViewById(R.id.text1)).setText(DateTime.now().toString());
-			container.addView(v);
-			return v;
-		}
+        @Override
+        public Object instantiateItem(ViewGroup container, int position) {
+            View v = LayoutInflater.from(getActivity()).inflate(R.layout.strip_list_item, null);
+            getImageLoader().loadImage((ImageView) v.findViewById(R.id.image), StripUtils.urlForDate(DateTime.now()));
+            ((TextView) v.findViewById(R.id.text1)).setText(DateTime.now().toString());
+            container.addView(v);
+            return v;
+        }
 
-		@Override
-		public void destroyItem(ViewGroup container, int position, Object object) {
-			container.removeView((View) object);
-		}
-	}
+        @Override
+        public void destroyItem(ViewGroup container, int position, Object object) {
+            container.removeView((View) object);
+        }
+    }
 
 }

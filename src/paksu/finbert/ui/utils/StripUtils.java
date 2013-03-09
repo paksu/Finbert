@@ -1,4 +1,3 @@
-
 package paksu.finbert.ui.utils;
 
 import java.util.ArrayList;
@@ -11,14 +10,14 @@ import org.joda.time.DateTime;
 
 public class StripUtils {
 
-	private static final String BASE_STRIP_URL = "http://www.taloussanomat.fi/dilbert/dilbert.php?";
+    private static final String BASE_STRIP_URL = "http://www.taloussanomat.fi/dilbert/dilbert.php?";
 
-	public static String urlForDate(DateTime date) {
-		String dateString = date.getYear() + "-" + date.getMonthOfYear() + "-" + date.getDayOfMonth();
+    public static String urlForDate(DateTime date) {
+        String dateString = date.getYear() + "-" + date.getMonthOfYear() + "-" + date.getDayOfMonth();
 
-		List<NameValuePair> requestParameters = new ArrayList<NameValuePair>();
-		requestParameters.add(new BasicNameValuePair("date", dateString));
+        List<NameValuePair> requestParameters = new ArrayList<NameValuePair>();
+        requestParameters.add(new BasicNameValuePair("date", dateString));
 
-		return BASE_STRIP_URL + URLEncodedUtils.format(requestParameters, "utf-8");
-	}
+        return BASE_STRIP_URL + URLEncodedUtils.format(requestParameters, "utf-8");
+    }
 }
